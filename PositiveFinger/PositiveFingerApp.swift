@@ -3,7 +3,7 @@
 //  PositiveFinger
 //
 //  Created by 市来武 on 2026/10/20.
-//
+//  Created by SWORDFIVE on 2026/10/20.
 
 import SwiftUI
 
