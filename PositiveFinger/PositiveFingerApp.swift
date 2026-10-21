@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct PositiveFingerApp: App {
+
     var body: some Scene {
+
         WindowGroup {
-            ContentView()
+            PositiveFingerHomeView()
         }
     }
 }
