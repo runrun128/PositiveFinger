@@ -1,0 +1,51 @@
+{
+  "originHash" : "2d52491c16b011471516f7275d456765fedd62ee871e6c2af22f7fb23bc8f445",
+  "pins" : [
+    {
+      "identity" : "boolexpressionevaluator",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ensan-hcl/BoolExpressionEvaluator",
+      "state" : {
+        "revision" : "cad2da328ad33821aa7e2922fc79f4e967f2adff",
+        "version" : "0.0.1"
+      }
+    },
+    {
+      "identity" : "custardkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ensan-hcl/CustardKit",
+      "state" : {
+        "revision" : "a71d4e9d002eca879b618523c82f1197fc815517",
+        "version" : "1.4.0"
+      }
+    },
+    {
+      "identity" : "swift-algorithms",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-algorithms",
+      "state" : {
+        "revision" : "87e50f483c54e6efd60e885f7f5aa946cee68023",
+        "version" : "1.2.1"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections.git",
+      "state" : {
+        "revision" : "94cf62b3ba8d4bed62680a282d4c25f9c63c2efb",
+        "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "swift-numerics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-numerics.git",
+      "state" : {
+        "revision" : "0c0290ff6b24942dadb83a929ffaaa1481df04a2",
+        "version" : "1.1.1"
+      }
+    }
+  ],
+  "version" : 3
+}

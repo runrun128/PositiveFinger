@@ -54,10 +54,10 @@ final class PositiveEngine {
 
         // 長い単語を優先して重複判定を防ぐ
         let sortedWords = positiveWords.keys.sorted {
-            $0.count > $1.count
+            $0.count == $1.count ? $0 < $1 : $0.count > $1.count
         }
 
-        var remainingText = text
+        var remainingText = text.precomposedStringWithCompatibilityMapping
 
         for word in sortedWords {
 
@@ -68,7 +68,7 @@ final class PositiveEngine {
 
                 remainingText = remainingText.replacingOccurrences(
                     of: word,
-                    with: ""
+                    with: "\u{FFFC}"
                 )
             }
         }
