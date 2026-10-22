@@ -69,11 +69,51 @@ final class KeyboardViewController: UIInputViewController {
 
     struct Keyboard: View {
         let theme: AzooKeyTheme
+        @Environment(\.accessibilityReduceMotion) private var reduceMotion
+        @State private var feedbackID: UUID?
+        @State private var storageWarning = false
+
         var body: some View {
-            KeyboardView<AzooKeyKeyboardViewExtension>()
-                .themeEnvironment(theme)
-                .environment(\.userActionManager, KeyboardViewController.action)
-                .environmentObject(KeyboardViewController.variableStates)
+            VStack(spacing: 0) {
+                ZStack {
+                    Color.clear
+                    if storageWarning {
+                        Text("ポイントを共有できません。フルアクセスの設定を確認してください")
+                            .font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.7)
+                    } else if feedbackID != nil {
+                        Label("前向きな表現の候補を見つけました", systemImage: "sparkles")
+                            .font(.caption).foregroundStyle(.secondary)
+                            .transition(.opacity)
+                    }
+                }
+                .frame(height: 26)
+                .allowsHitTesting(false)
+                KeyboardView<AzooKeyKeyboardViewExtension>()
+                    .themeEnvironment(theme)
+                    .environment(\.userActionManager, KeyboardViewController.action)
+                    .environmentObject(KeyboardViewController.variableStates)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .positiveStorageAvailable)) { _ in
+                storageWarning = false
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .positiveStorageUnavailable)) { _ in
+                storageWarning = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .positiveExpressionDetected)) { _ in
+                // A failed shared write emits its own status; do not overwrite it with success.
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
+                    feedbackID = UUID()
+                }
+            }
+            .task(id: feedbackID) {
+                guard feedbackID != nil else { return }
+                do { try await Task.sleep(nanoseconds: 2_000_000_000) }
+                catch { return }
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
+                    feedbackID = nil
+                }
+            }
+            .onDisappear { feedbackID = nil }
         }
     }
 
@@ -97,6 +137,13 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func setupKeyboardView() {
+        PositiveKeyboardTracker.shared.sensitiveInputCheck = { [weak self] in
+            guard let self else { return true }
+            let type = self.textDocumentProxy.textContentType ?? nil
+            return (self.textDocumentProxy.isSecureTextEntry ?? false)
+                || type == .password || type == .newPassword
+                || type == .oneTimeCode || type == .creditCardNumber
+        }
         let host = KeyboardViewController.keyboardViewHost ?? KeyboardHostingController(rootView: Keyboard(theme: getCurrentTheme()))
         // コントロールセンターを出しにくくする。
         host.setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
@@ -268,9 +315,9 @@ final class KeyboardViewController: UIInputViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         if #available(iOS 16, *) {
-            self.view.frame.size.height = Design.keyboardScreenHeight(upsideComponent: KeyboardViewController.variableStates.upsideComponent, orientation: KeyboardViewController.variableStates.keyboardOrientation)
+            self.view.frame.size.height = 26 + Design.keyboardScreenHeight(upsideComponent: KeyboardViewController.variableStates.upsideComponent, orientation: KeyboardViewController.variableStates.keyboardOrientation)
         } else {
-            self.view.frame.size.height = Design.keyboardScreenHeight(upsideComponent: KeyboardViewController.variableStates.upsideComponent, orientation: KeyboardViewController.variableStates.keyboardOrientation)
+            self.view.frame.size.height = 26 + Design.keyboardScreenHeight(upsideComponent: KeyboardViewController.variableStates.upsideComponent, orientation: KeyboardViewController.variableStates.keyboardOrientation)
             self.updateViewConstraints()
         }
     }

@@ -8,52 +8,54 @@
 import Foundation
 
 struct PositiveAnalysisResult {
-    let score: Int
     let matchedWords: [String]
 
     var isPositive: Bool {
-        score > 0
+        !matchedWords.isEmpty
     }
 }
 
-final class PositiveEngine {
+protocol PositiveExpressionAnalyzing {
+    func analyze(_ text: String) -> PositiveAnalysisResult
+}
+
+final class PositiveEngine: PositiveExpressionAnalyzing {
 
     static let shared = PositiveEngine()
 
     private init() {}
 
-    private let positiveWords: [String: Int] = [
-        "ありがとう": 10,
-        "ありがとうございます": 15,
-        "感謝": 10,
-        "嬉しい": 5,
-        "うれしい": 5,
-        "楽しい": 5,
-        "たのしい": 5,
-        "最高": 5,
-        "大好き": 10,
-        "好き": 5,
-        "おめでとう": 10,
-        "頑張った": 10,
-        "がんばった": 10,
-        "素晴らしい": 10,
-        "すごい": 5,
-        "幸せ": 10,
-        "助かった": 5,
-        "よかった": 5,
-        "いいね": 5,
-        "応援してる": 10,
-        "大丈夫": 5,
-        "できた": 5
+    private let positiveWords: [String] = [
+        "ありがとう",
+        "ありがとうございます",
+        "感謝",
+        "嬉しい",
+        "うれしい",
+        "楽しい",
+        "たのしい",
+        "最高",
+        "大好き",
+        "好き",
+        "おめでとう",
+        "頑張った",
+        "がんばった",
+        "素晴らしい",
+        "すごい",
+        "幸せ",
+        "助かった",
+        "よかった",
+        "いいね",
+        "応援してる",
+        "大丈夫",
+        "できた"
     ]
 
     func analyze(_ text: String) -> PositiveAnalysisResult {
 
-        var score = 0
         var matchedWords: [String] = []
 
         // 長い単語を優先して重複判定を防ぐ
-        let sortedWords = positiveWords.keys.sorted {
+        let sortedWords = positiveWords.sorted {
             $0.count == $1.count ? $0 < $1 : $0.count > $1.count
         }
 
@@ -61,9 +63,12 @@ final class PositiveEngine {
 
         for word in sortedWords {
 
-            if remainingText.contains(word) {
+            if remainingText.ranges(of: word).contains(where: { range in
+                let tail = String(remainingText[range.upperBound...].prefix(16))
+                let negations = ["じゃない", "ではない", "でない", "くない", "しくない", "とは思わない", "と思わない", "と言えな", "って言えな", "といえな", "とは言えな", "ではなかった", "じゃなかった", "くなかった", "しくなかった", "ない", "なかった"]
+                return !negations.contains(where: { tail.hasPrefix($0) })
+            }) {
 
-                score += positiveWords[word] ?? 0
                 matchedWords.append(word)
 
                 remainingText = remainingText.replacingOccurrences(
@@ -74,8 +79,18 @@ final class PositiveEngine {
         }
 
         return PositiveAnalysisResult(
-            score: score,
             matchedWords: matchedWords
         )
+    }
+}
+
+private extension String {
+    func ranges(of word: String) -> [Range<String.Index>] {
+        var result: [Range<String.Index>] = []
+        var start = startIndex
+        while start < endIndex, let range = range(of: word, range: start..<endIndex) {
+            result.append(range); start = range.upperBound
+        }
+        return result
     }
 }

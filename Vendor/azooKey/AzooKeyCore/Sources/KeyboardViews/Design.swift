@@ -324,32 +324,32 @@ public enum Design {
         case `default`
 
         public var backGroundColor: Color {
-            Color("BackGroundColor_iOS15")
+            PositiveFingerKeyboardPalette.color(named: "BackGroundColor_iOS15")
         }
 
         public var specialEnterKeyColor: Color {
-            Color("OpenKeyColor")
+            PositiveFingerKeyboardPalette.color(named: "OpenKeyColor")
         }
 
         public func normalKeyColor(layout: KeyboardLayout) -> Color {
             switch layout {
             case .flick:
-                return Color("NormalKeyColor")
+                return PositiveFingerKeyboardPalette.color(named: "NormalKeyColor")
             case .qwerty:
-                return Color("RomanKeyColor")
+                return PositiveFingerKeyboardPalette.color(named: "RomanKeyColor")
             }
         }
 
         public var specialKeyColor: Color {
-            Color("TabKeyColor_iOS15")
+            PositiveFingerKeyboardPalette.color(named: "TabKeyColor_iOS15")
         }
 
         public func highlightedKeyColor(layout: KeyboardLayout) -> Color {
             switch layout {
             case .flick:
-                return Color("HighlightedKeyColor")
+                return PositiveFingerKeyboardPalette.color(named: "HighlightedKeyColor")
             case .qwerty:
-                return Color("RomanHighlightedKeyColor")
+                return PositiveFingerKeyboardPalette.color(named: "RomanHighlightedKeyColor")
             }
         }
 
@@ -358,7 +358,7 @@ public enum Design {
             case .flick:
                 return .systemGray4
             case .qwerty:
-                return Color("RomanHighlightedKeyColor")
+                return PositiveFingerKeyboardPalette.color(named: "RomanHighlightedKeyColor")
             }
         }
 

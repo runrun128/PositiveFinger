@@ -3,41 +3,43 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
+        AAF010000000000000000001 /* AppIcon60x60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAF010000000000000000003; };
+        AAF010000000000000000002 /* AppIcon60x60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAF010000000000000000004; };
+		0B0F7C567551A129BCBD4CCC /* KanaKanjiConverterModule in Frameworks */ = {isa = PBXBuildFile; productRef = A464198881A77929632836B6 /* KanaKanjiConverterModule */; };
+		10A658B50B8BE316E8D55FA5 /* PositiveFingerKeyboard/KeyboardActionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909A086F133CF057B3355E82 /* PositiveFingerKeyboard/KeyboardActionManager.swift */; };
+		28AF96C2AEF50B22D0940699 /* PositiveFingerKeyboard/PredictionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92B8D5ABF4685097D406E76 /* PositiveFingerKeyboard/PredictionManager.swift */; };
+		303DBC451EE2B4FE680791A6 /* PositiveFingerKeyboard/Resources/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 8DAAADB3A44857C23016754D /* PositiveFingerKeyboard/Resources/Localizable.xcstrings */; };
+		43882A40177299FD1013857C /* SwiftUIUtils in Frameworks */ = {isa = PBXBuildFile; productRef = 2B1EB8C02F3220DFB0DC137D /* SwiftUIUtils */; };
+		4B51BCB2A95DA7FA37CCC004 /* Acknowledgements.txt in Resources */ = {isa = PBXBuildFile; fileRef = 970C2D0F14946CFC32C63747 /* Acknowledgements.txt */; };
+		5BB5178944016E617AC89076 /* PositiveFingerKeyboard/InputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89633B553B55EEF6080CC73 /* PositiveFingerKeyboard/InputManager.swift */; };
+		643D6630F7DC20C7037AEEB9 /* PositiveFinger/PositiveEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F8DA798C598A959F2DC4D01 /* PositiveFinger/PositiveEngine.swift */; };
+		755D9DEBFCD8A4509430ECCE /* PositiveFinger/PositiveKeyboardTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCD7EF80C4B420DC0B918E8 /* PositiveFinger/PositiveKeyboardTracker.swift */; };
+		788158F53FA14E54D8B0DE35 /* AzooKeyUtils in Frameworks */ = {isa = PBXBuildFile; productRef = 9D2BF4872115D5668A3339DF /* AzooKeyUtils */; };
+		7C9DF66129567ACB10D931AE /* PositiveFinger/PositiveFingerHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A978215765866F59871CF712 /* PositiveFinger/PositiveFingerHomeView.swift */; };
+		7FAD8C608BE49E96DD4600D5 /* KeyboardViews in Frameworks */ = {isa = PBXBuildFile; productRef = 174E21BC2B0DC7D0E5EEA5E7 /* KeyboardViews */; };
+		8DC7B8C54662FFDACCAA72F0 /* PositiveFinger/PositiveEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F8DA798C598A959F2DC4D01 /* PositiveFinger/PositiveEngine.swift */; };
+		A8D8946AC8C9596E5735BF0C /* PositiveFingerKeyboard/LiveConversionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 772A4DEA947CB4A3257DFF9C /* PositiveFingerKeyboard/LiveConversionManager.swift */; };
+		AC028522D4687ED1344E8046 /* PositiveFingerKeyboard/Resources/Dictionary in Resources */ = {isa = PBXBuildFile; fileRef = B2DDC23BEA6E7D83137DD545 /* PositiveFingerKeyboard/Resources/Dictionary */; };
+		B44969A50FC4B41699CEBFD3 /* PositiveFingerKeyboard/Resources/Designs.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EF863153531E264049CC64A0 /* PositiveFingerKeyboard/Resources/Designs.xcassets */; };
+		B4F18D9CD0BACB844B79B122 /* PositiveFinger/PositiveKeyboardTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCD7EF80C4B420DC0B918E8 /* PositiveFinger/PositiveKeyboardTracker.swift */; };
+		B600C384C218211C628CF0D2 /* PositiveFinger/PositiveActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED4F18FDE652473BCB52288 /* PositiveFinger/PositiveActivityStore.swift */; };
+		BCD405450273FB3A4F706637 /* KeyboardThemes in Frameworks */ = {isa = PBXBuildFile; productRef = 0CB8DA6ED811DCD88065BCB9 /* KeyboardThemes */; };
+		C71BD386AE4C2B131DE2CAB9 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 1F7DF6F13C9888E313FCD990 /* OrderedCollections */; };
+		D0D2D0D4C6F1CAAC192DBE10 /* PositiveFinger/PositiveActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED4F18FDE652473BCB52288 /* PositiveFinger/PositiveActivityStore.swift */; };
+		E47864DE6B510701479793D2 /* PositiveFingerKeyboard/DisplayedTextManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C5005B9ACF1CA16C3057A0 /* PositiveFingerKeyboard/DisplayedTextManager.swift */; };
 		E524E01A3086FC5700C523C9 /* PositiveFingerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E524E0193086FC5700C523C9 /* PositiveFingerApp.swift */; };
 		E524E01C3086FC5700C523C9 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E524E01B3086FC5700C523C9 /* ContentView.swift */; };
 		E524E01E3086FC5900C523C9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E524E01D3086FC5900C523C9 /* Assets.xcassets */; };
 		E524E0213086FC5900C523C9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E524E0203086FC5900C523C9 /* Preview Assets.xcassets */; };
 		E524E02E3086FCDE00C523C9 /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E524E02D3086FCDE00C523C9 /* KeyboardViewController.swift */; };
 		E524E0323086FCDE00C523C9 /* PositiveFingerKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E524E02B3086FCDE00C523C9 /* PositiveFingerKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		8DC7B8C54662FFDACCAA72F0 = {isa = PBXBuildFile; fileRef = 0F8DA798C598A959F2DC4D01; };
-		643D6630F7DC20C7037AEEB9 = {isa = PBXBuildFile; fileRef = 0F8DA798C598A959F2DC4D01; };
-		B600C384C218211C628CF0D2 = {isa = PBXBuildFile; fileRef = 2ED4F18FDE652473BCB52288; };
-		D0D2D0D4C6F1CAAC192DBE10 = {isa = PBXBuildFile; fileRef = 2ED4F18FDE652473BCB52288; };
-		B4F18D9CD0BACB844B79B122 = {isa = PBXBuildFile; fileRef = CDCD7EF80C4B420DC0B918E8; };
-		755D9DEBFCD8A4509430ECCE = {isa = PBXBuildFile; fileRef = CDCD7EF80C4B420DC0B918E8; };
-		7C9DF66129567ACB10D931AE = {isa = PBXBuildFile; fileRef = A978215765866F59871CF712; };
-		10A658B50B8BE316E8D55FA5 = {isa = PBXBuildFile; fileRef = 909A086F133CF057B3355E82; };
-		A8D8946AC8C9596E5735BF0C = {isa = PBXBuildFile; fileRef = 772A4DEA947CB4A3257DFF9C; };
-		28AF96C2AEF50B22D0940699 = {isa = PBXBuildFile; fileRef = E92B8D5ABF4685097D406E76; };
-		E47864DE6B510701479793D2 = {isa = PBXBuildFile; fileRef = 55C5005B9ACF1CA16C3057A0; };
-		5BB5178944016E617AC89076 = {isa = PBXBuildFile; fileRef = C89633B553B55EEF6080CC73; };
-		AC028522D4687ED1344E8046 = {isa = PBXBuildFile; fileRef = B2DDC23BEA6E7D83137DD545; };
-		B44969A50FC4B41699CEBFD3 = {isa = PBXBuildFile; fileRef = EF863153531E264049CC64A0; };
-		303DBC451EE2B4FE680791A6 = {isa = PBXBuildFile; fileRef = 8DAAADB3A44857C23016754D; };
-		F44E9217E33673DD1BA1F95E = {isa = PBXBuildFile; fileRef = 683785AD9EB77354F8B2917A; };
-		788158F53FA14E54D8B0DE35 = {isa = PBXBuildFile; productRef = 9D2BF4872115D5668A3339DF; };
-		7FAD8C608BE49E96DD4600D5 = {isa = PBXBuildFile; productRef = 174E21BC2B0DC7D0E5EEA5E7; };
-		43882A40177299FD1013857C = {isa = PBXBuildFile; productRef = 2B1EB8C02F3220DFB0DC137D; };
-		BCD405450273FB3A4F706637 = {isa = PBXBuildFile; productRef = 0CB8DA6ED811DCD88065BCB9; };
-		0B0F7C567551A129BCBD4CCC = {isa = PBXBuildFile; productRef = A464198881A77929632836B6; };
-		F70C74A821074415D55E572D = {isa = PBXBuildFile; productRef = C26805B88A94465A663FED64; };
-		C71BD386AE4C2B131DE2CAB9 = {isa = PBXBuildFile; productRef = 1F7DF6F13C9888E313FCD990; };
-		4B51BCB2A95DA7FA37CCC004 = {isa = PBXBuildFile; fileRef = 970C2D0F14946CFC32C63747; };
-		F7FDB74D48D70C2FBC10166E = {isa = PBXBuildFile; fileRef = 970C2D0F14946CFC32C63747; };
+		F44E9217E33673DD1BA1F95E /* PositiveFingerKeyboard/Resources/AzooKeyIcon-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 683785AD9EB77354F8B2917A /* PositiveFingerKeyboard/Resources/AzooKeyIcon-Regular.otf */; };
+		F70C74A821074415D55E572D /* SwiftUtils in Frameworks */ = {isa = PBXBuildFile; productRef = C26805B88A94465A663FED64 /* SwiftUtils */; };
+		F7FDB74D48D70C2FBC10166E /* Acknowledgements.txt in Resources */ = {isa = PBXBuildFile; fileRef = 970C2D0F14946CFC32C63747 /* Acknowledgements.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +67,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+        AAF010000000000000000003 = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PositiveFinger/AppIcon60x60@2x.png"; sourceTree = SOURCE_ROOT; };
+        AAF010000000000000000004 = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PositiveFinger/AppIcon60x60@3x.png"; sourceTree = SOURCE_ROOT; };
+		0F8DA798C598A959F2DC4D01 /* PositiveFinger/PositiveEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFinger/PositiveEngine.swift; sourceTree = SOURCE_ROOT; };
+		2ED4F18FDE652473BCB52288 /* PositiveFinger/PositiveActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFinger/PositiveActivityStore.swift; sourceTree = SOURCE_ROOT; };
+		55C5005B9ACF1CA16C3057A0 /* PositiveFingerKeyboard/DisplayedTextManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFingerKeyboard/DisplayedTextManager.swift; sourceTree = SOURCE_ROOT; };
+		683785AD9EB77354F8B2917A /* PositiveFingerKeyboard/Resources/AzooKeyIcon-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PositiveFingerKeyboard/Resources/AzooKeyIcon-Regular.otf"; sourceTree = SOURCE_ROOT; };
+		772A4DEA947CB4A3257DFF9C /* PositiveFingerKeyboard/LiveConversionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFingerKeyboard/LiveConversionManager.swift; sourceTree = SOURCE_ROOT; };
+		8DAAADB3A44857C23016754D /* PositiveFingerKeyboard/Resources/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = PositiveFingerKeyboard/Resources/Localizable.xcstrings; sourceTree = SOURCE_ROOT; };
+		909A086F133CF057B3355E82 /* PositiveFingerKeyboard/KeyboardActionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFingerKeyboard/KeyboardActionManager.swift; sourceTree = SOURCE_ROOT; };
+		970C2D0F14946CFC32C63747 /* Acknowledgements.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Acknowledgements.txt; sourceTree = SOURCE_ROOT; };
+		A978215765866F59871CF712 /* PositiveFinger/PositiveFingerHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFinger/PositiveFingerHomeView.swift; sourceTree = SOURCE_ROOT; };
+		B2DDC23BEA6E7D83137DD545 /* PositiveFingerKeyboard/Resources/Dictionary */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PositiveFingerKeyboard/Resources/Dictionary; sourceTree = SOURCE_ROOT; };
+		C89633B553B55EEF6080CC73 /* PositiveFingerKeyboard/InputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFingerKeyboard/InputManager.swift; sourceTree = SOURCE_ROOT; };
+		CDCD7EF80C4B420DC0B918E8 /* PositiveFinger/PositiveKeyboardTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFinger/PositiveKeyboardTracker.swift; sourceTree = SOURCE_ROOT; };
 		E524E0163086FC5700C523C9 /* PositiveFinger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PositiveFinger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E524E0193086FC5700C523C9 /* PositiveFingerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFingerApp.swift; sourceTree = "<group>"; };
 		E524E01B3086FC5700C523C9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -73,20 +89,8 @@
 		E524E02B3086FCDE00C523C9 /* PositiveFingerKeyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PositiveFingerKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E524E02D3086FCDE00C523C9 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
 		E524E02F3086FCDE00C523C9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0F8DA798C598A959F2DC4D01 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PositiveFinger/PositiveEngine.swift"; sourceTree = SOURCE_ROOT; };
-		2ED4F18FDE652473BCB52288 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PositiveFinger/PositivePointManager.swift"; sourceTree = SOURCE_ROOT; };
-		CDCD7EF80C4B420DC0B918E8 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PositiveFinger/Preview Content/PositiveKeyboardTracker.swift"; sourceTree = SOURCE_ROOT; };
-		A978215765866F59871CF712 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PositiveFinger/PositiveFingerHomeView.swift"; sourceTree = SOURCE_ROOT; };
-		909A086F133CF057B3355E82 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PositiveFingerKeyboard/KeyboardActionManager.swift"; sourceTree = SOURCE_ROOT; };
-		772A4DEA947CB4A3257DFF9C = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PositiveFingerKeyboard/LiveConversionManager.swift"; sourceTree = SOURCE_ROOT; };
-		E92B8D5ABF4685097D406E76 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PositiveFingerKeyboard/PredictionManager.swift"; sourceTree = SOURCE_ROOT; };
-		55C5005B9ACF1CA16C3057A0 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PositiveFingerKeyboard/DisplayedTextManager.swift"; sourceTree = SOURCE_ROOT; };
-		C89633B553B55EEF6080CC73 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PositiveFingerKeyboard/InputManager.swift"; sourceTree = SOURCE_ROOT; };
-		B2DDC23BEA6E7D83137DD545 = {isa = PBXFileReference; lastKnownFileType = folder; path = "PositiveFingerKeyboard/Resources/Dictionary"; sourceTree = SOURCE_ROOT; };
-		EF863153531E264049CC64A0 = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "PositiveFingerKeyboard/Resources/Designs.xcassets"; sourceTree = SOURCE_ROOT; };
-		8DAAADB3A44857C23016754D = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = "PositiveFingerKeyboard/Resources/Localizable.xcstrings"; sourceTree = SOURCE_ROOT; };
-		683785AD9EB77354F8B2917A = {isa = PBXFileReference; lastKnownFileType = file; path = "PositiveFingerKeyboard/Resources/AzooKeyIcon-Regular.otf"; sourceTree = SOURCE_ROOT; };
-		970C2D0F14946CFC32C63747 = {isa = PBXFileReference; lastKnownFileType = text; path = "Acknowledgements.txt"; sourceTree = SOURCE_ROOT; };
+		E92B8D5ABF4685097D406E76 /* PositiveFingerKeyboard/PredictionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFingerKeyboard/PredictionManager.swift; sourceTree = SOURCE_ROOT; };
+		EF863153531E264049CC64A0 /* PositiveFingerKeyboard/Resources/Designs.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = PositiveFingerKeyboard/Resources/Designs.xcassets; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,13 +105,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				788158F53FA14E54D8B0DE35,
-				7FAD8C608BE49E96DD4600D5,
-				43882A40177299FD1013857C,
-				BCD405450273FB3A4F706637,
-				0B0F7C567551A129BCBD4CCC,
-				F70C74A821074415D55E572D,
-				C71BD386AE4C2B131DE2CAB9,
+				788158F53FA14E54D8B0DE35 /* AzooKeyUtils in Frameworks */,
+				7FAD8C608BE49E96DD4600D5 /* KeyboardViews in Frameworks */,
+				43882A40177299FD1013857C /* SwiftUIUtils in Frameworks */,
+				BCD405450273FB3A4F706637 /* KeyboardThemes in Frameworks */,
+				0B0F7C567551A129BCBD4CCC /* KanaKanjiConverterModule in Frameworks */,
+				F70C74A821074415D55E572D /* SwiftUtils in Frameworks */,
+				C71BD386AE4C2B131DE2CAB9 /* OrderedCollections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,21 +122,22 @@
 			isa = PBXGroup;
 			children = (
 				E524E0183086FC5700C523C9 /* PositiveFinger */,
-				0F8DA798C598A959F2DC4D01,
-				2ED4F18FDE652473BCB52288,
-				CDCD7EF80C4B420DC0B918E8,
-				A978215765866F59871CF712,
-				909A086F133CF057B3355E82,
-				772A4DEA947CB4A3257DFF9C,
-				E92B8D5ABF4685097D406E76,
-				55C5005B9ACF1CA16C3057A0,
-				C89633B553B55EEF6080CC73,
-				B2DDC23BEA6E7D83137DD545,
-				EF863153531E264049CC64A0,
-				8DAAADB3A44857C23016754D,
-				683785AD9EB77354F8B2917A,
+				0F8DA798C598A959F2DC4D01 /* PositiveFinger/PositiveEngine.swift */,
+				2ED4F18FDE652473BCB52288 /* PositiveFinger/PositiveActivityStore.swift */,
+				CDCD7EF80C4B420DC0B918E8 /* PositiveFinger/PositiveKeyboardTracker.swift */,
+				A978215765866F59871CF712 /* PositiveFinger/PositiveFingerHomeView.swift */,
+				909A086F133CF057B3355E82 /* PositiveFingerKeyboard/KeyboardActionManager.swift */,
+				772A4DEA947CB4A3257DFF9C /* PositiveFingerKeyboard/LiveConversionManager.swift */,
+				E92B8D5ABF4685097D406E76 /* PositiveFingerKeyboard/PredictionManager.swift */,
+				55C5005B9ACF1CA16C3057A0 /* PositiveFingerKeyboard/DisplayedTextManager.swift */,
+				C89633B553B55EEF6080CC73 /* PositiveFingerKeyboard/InputManager.swift */,
+				B2DDC23BEA6E7D83137DD545 /* PositiveFingerKeyboard/Resources/Dictionary */,
+				EF863153531E264049CC64A0 /* PositiveFingerKeyboard/Resources/Designs.xcassets */,
+				8DAAADB3A44857C23016754D /* PositiveFingerKeyboard/Resources/Localizable.xcstrings */,
+				683785AD9EB77354F8B2917A /* PositiveFingerKeyboard/Resources/AzooKeyIcon-Regular.otf */,
 				E524E02C3086FCDE00C523C9 /* PositiveFingerKeyboard */,
 				E524E0173086FC5700C523C9 /* Products */,
+				E5ED98A9308A3BAD00748505 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -173,6 +178,14 @@
 			path = PositiveFingerKeyboard;
 			sourceTree = "<group>";
 		};
+		E5ED98A9308A3BAD00748505 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				970C2D0F14946CFC32C63747 /* Acknowledgements.txt */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -208,7 +221,15 @@
 			dependencies = (
 			);
 			name = PositiveFingerKeyboard;
-			packageProductDependencies = (9D2BF4872115D5668A3339DF,174E21BC2B0DC7D0E5EEA5E7,2B1EB8C02F3220DFB0DC137D,0CB8DA6ED811DCD88065BCB9,A464198881A77929632836B6,C26805B88A94465A663FED64,1F7DF6F13C9888E313FCD990,);
+			packageProductDependencies = (
+				9D2BF4872115D5668A3339DF /* AzooKeyUtils */,
+				174E21BC2B0DC7D0E5EEA5E7 /* KeyboardViews */,
+				2B1EB8C02F3220DFB0DC137D /* SwiftUIUtils */,
+				0CB8DA6ED811DCD88065BCB9 /* KeyboardThemes */,
+				A464198881A77929632836B6 /* KanaKanjiConverterModule */,
+				C26805B88A94465A663FED64 /* SwiftUtils */,
+				1F7DF6F13C9888E313FCD990 /* OrderedCollections */,
+			);
 			productName = PositiveFingerKeyboard;
 			productReference = E524E02B3086FCDE00C523C9 /* PositiveFingerKeyboard.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -240,8 +261,12 @@
 				Base,
 			);
 			mainGroup = E524E00D3086FC5700C523C9;
+			packageReferences = (
+				C0E56DB52AB139D6D5B66362 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyCore" */,
+				2C3199988097E4BB3103E8C3 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyKanaKanjiConverter" */,
+				FA4B9D69FDDDC7C1BE7BED94 /* XCRemoteSwiftPackageReference "swift-collections" */,
+			);
 			productRefGroup = E524E0173086FC5700C523C9 /* Products */;
-			packageReferences = (C0E56DB52AB139D6D5B66362,2C3199988097E4BB3103E8C3,FA4B9D69FDDDC7C1BE7BED94,);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -256,7 +281,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4B51BCB2A95DA7FA37CCC004,
+				AAF010000000000000000001 /* AppIcon60x60@2x.png in Resources */,
+                AAF010000000000000000002 /* AppIcon60x60@3x.png in Resources */,
+                4B51BCB2A95DA7FA37CCC004 /* Acknowledgements.txt in Resources */,
 				E524E0213086FC5900C523C9 /* Preview Assets.xcassets in Resources */,
 				E524E01E3086FC5900C523C9 /* Assets.xcassets in Resources */,
 			);
@@ -266,11 +293,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F7FDB74D48D70C2FBC10166E,
-				AC028522D4687ED1344E8046,
-				B44969A50FC4B41699CEBFD3,
-				303DBC451EE2B4FE680791A6,
-				F44E9217E33673DD1BA1F95E,
+				F7FDB74D48D70C2FBC10166E /* Acknowledgements.txt in Resources */,
+				AC028522D4687ED1344E8046 /* PositiveFingerKeyboard/Resources/Dictionary in Resources */,
+				B44969A50FC4B41699CEBFD3 /* PositiveFingerKeyboard/Resources/Designs.xcassets in Resources */,
+				303DBC451EE2B4FE680791A6 /* PositiveFingerKeyboard/Resources/Localizable.xcstrings in Resources */,
+				F44E9217E33673DD1BA1F95E /* PositiveFingerKeyboard/Resources/AzooKeyIcon-Regular.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,10 +308,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8DC7B8C54662FFDACCAA72F0,
-				B600C384C218211C628CF0D2,
-				B4F18D9CD0BACB844B79B122,
-				7C9DF66129567ACB10D931AE,
+				8DC7B8C54662FFDACCAA72F0 /* PositiveFinger/PositiveEngine.swift in Sources */,
+				B600C384C218211C628CF0D2 /* PositiveFinger/PositiveActivityStore.swift in Sources */,
+				B4F18D9CD0BACB844B79B122 /* PositiveFinger/PositiveKeyboardTracker.swift in Sources */,
+				7C9DF66129567ACB10D931AE /* PositiveFinger/PositiveFingerHomeView.swift in Sources */,
 				E524E01C3086FC5700C523C9 /* ContentView.swift in Sources */,
 				E524E01A3086FC5700C523C9 /* PositiveFingerApp.swift in Sources */,
 			);
@@ -294,14 +321,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				643D6630F7DC20C7037AEEB9,
-				D0D2D0D4C6F1CAAC192DBE10,
-				755D9DEBFCD8A4509430ECCE,
-				10A658B50B8BE316E8D55FA5,
-				A8D8946AC8C9596E5735BF0C,
-				28AF96C2AEF50B22D0940699,
-				E47864DE6B510701479793D2,
-				5BB5178944016E617AC89076,
+				643D6630F7DC20C7037AEEB9 /* PositiveFinger/PositiveEngine.swift in Sources */,
+				D0D2D0D4C6F1CAAC192DBE10 /* PositiveFinger/PositiveActivityStore.swift in Sources */,
+				755D9DEBFCD8A4509430ECCE /* PositiveFinger/PositiveKeyboardTracker.swift in Sources */,
+				10A658B50B8BE316E8D55FA5 /* PositiveFingerKeyboard/KeyboardActionManager.swift in Sources */,
+				A8D8946AC8C9596E5735BF0C /* PositiveFingerKeyboard/LiveConversionManager.swift in Sources */,
+				28AF96C2AEF50B22D0940699 /* PositiveFingerKeyboard/PredictionManager.swift in Sources */,
+				E47864DE6B510701479793D2 /* PositiveFingerKeyboard/DisplayedTextManager.swift in Sources */,
+				5BB5178944016E617AC89076 /* PositiveFingerKeyboard/InputManager.swift in Sources */,
 				E524E02E3086FCDE00C523C9 /* KeyboardViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -439,16 +466,18 @@
 		E524E0253086FC5900C523C9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = PositiveFinger/PositiveFinger.entitlements;
-				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                INFOPLIST_FILE = PositiveFinger/AppInfo.plist;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PositiveFinger/PositiveFinger.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PositiveFinger/Preview Content\"";
+				DEVELOPMENT_TEAM = 3WJ24PGKZ8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -464,23 +493,25 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
 		E524E0263086FC5900C523C9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = PositiveFinger/PositiveFinger.entitlements;
-				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                INFOPLIST_FILE = PositiveFinger/AppInfo.plist;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PositiveFinger/PositiveFinger.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PositiveFinger/Preview Content\"";
+				DEVELOPMENT_TEAM = 3WJ24PGKZ8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -496,20 +527,21 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
 		E524E0343086FCDE00C523C9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = PositiveFingerKeyboard/PositiveFingerKeyboard.entitlements;
-				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3WJ24PGKZ8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PositiveFingerKeyboard/Info.plist;
-				APPLICATION_EXTENSION_API_ONLY = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -523,20 +555,21 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
 		E524E0353086FCDE00C523C9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = PositiveFingerKeyboard/PositiveFingerKeyboard.entitlements;
-				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3WJ24PGKZ8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PositiveFingerKeyboard/Info.plist;
-				APPLICATION_EXTENSION_API_ONLY = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -550,7 +583,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -585,21 +618,65 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
 /* Begin XCLocalSwiftPackageReference section */
-		C0E56DB52AB139D6D5B66362 = {isa = XCLocalSwiftPackageReference; relativePath = Vendor/azooKey/AzooKeyCore; };
+		2C3199988097E4BB3103E8C3 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyKanaKanjiConverter" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/azooKey/AzooKeyKanaKanjiConverter;
+		};
+		C0E56DB52AB139D6D5B66362 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/azooKey/AzooKeyCore;
+		};
 /* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
-		2C3199988097E4BB3103E8C3 = {isa = XCLocalSwiftPackageReference; relativePath = Vendor/azooKey/AzooKeyKanaKanjiConverter; };
-		FA4B9D69FDDDC7C1BE7BED94 = {isa = XCRemoteSwiftPackageReference; repositoryURL = "https://github.com/apple/swift-collections.git"; requirement = {kind = exactVersion; version = 1.1.0; }; };
+		FA4B9D69FDDDC7C1BE7BED94 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
-		9D2BF4872115D5668A3339DF = {isa = XCSwiftPackageProductDependency; package = C0E56DB52AB139D6D5B66362; productName = AzooKeyUtils; };
-		174E21BC2B0DC7D0E5EEA5E7 = {isa = XCSwiftPackageProductDependency; package = C0E56DB52AB139D6D5B66362; productName = KeyboardViews; };
-		2B1EB8C02F3220DFB0DC137D = {isa = XCSwiftPackageProductDependency; package = C0E56DB52AB139D6D5B66362; productName = SwiftUIUtils; };
-		0CB8DA6ED811DCD88065BCB9 = {isa = XCSwiftPackageProductDependency; package = C0E56DB52AB139D6D5B66362; productName = KeyboardThemes; };
-		A464198881A77929632836B6 = {isa = XCSwiftPackageProductDependency; package = 2C3199988097E4BB3103E8C3; productName = KanaKanjiConverterModule; };
-		C26805B88A94465A663FED64 = {isa = XCSwiftPackageProductDependency; package = 2C3199988097E4BB3103E8C3; productName = SwiftUtils; };
-		1F7DF6F13C9888E313FCD990 = {isa = XCSwiftPackageProductDependency; package = FA4B9D69FDDDC7C1BE7BED94; productName = OrderedCollections; };
+		0CB8DA6ED811DCD88065BCB9 /* KeyboardThemes */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0E56DB52AB139D6D5B66362 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyCore" */;
+			productName = KeyboardThemes;
+		};
+		174E21BC2B0DC7D0E5EEA5E7 /* KeyboardViews */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0E56DB52AB139D6D5B66362 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyCore" */;
+			productName = KeyboardViews;
+		};
+		1F7DF6F13C9888E313FCD990 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FA4B9D69FDDDC7C1BE7BED94 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
+		2B1EB8C02F3220DFB0DC137D /* SwiftUIUtils */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0E56DB52AB139D6D5B66362 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyCore" */;
+			productName = SwiftUIUtils;
+		};
+		9D2BF4872115D5668A3339DF /* AzooKeyUtils */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0E56DB52AB139D6D5B66362 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyCore" */;
+			productName = AzooKeyUtils;
+		};
+		A464198881A77929632836B6 /* KanaKanjiConverterModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2C3199988097E4BB3103E8C3 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyKanaKanjiConverter" */;
+			productName = KanaKanjiConverterModule;
+		};
+		C26805B88A94465A663FED64 /* SwiftUtils */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2C3199988097E4BB3103E8C3 /* XCLocalSwiftPackageReference "Vendor/azooKey/AzooKeyKanaKanjiConverter" */;
+			productName = SwiftUtils;
+		};
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E524E00E3086FC5700C523C9 /* Project object */;
