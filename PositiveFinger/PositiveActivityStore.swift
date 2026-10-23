@@ -28,6 +28,8 @@ final class PositiveActivityStore {
         var equipped = "momo"
         var balance: Int { legacyPoints }
         var lastRewardDate: Date?
+        var cloudUserID: String?
+        var cloudEvents: [String] = []
         var exchanges: Set<String> = []
         var questJoined = false
         var questStartCount = 0
@@ -37,6 +39,7 @@ final class PositiveActivityStore {
         init() {}
         enum CodingKeys: String, CodingKey {
             case detectionCount, dailyCounts, settings, salt, recent, rewardedCount, lastFeedbackDate
+            case cloudUserID, cloudEvents
             case lastRewardDate
             case rewardDay, rewardHashes, dailyEarned, collection, equipped, exchanges, questJoined, questStartCount, questProgress, questClaimed
             case legacyPoints = "totalPoints"
@@ -51,6 +54,8 @@ final class PositiveActivityStore {
             legacyPoints = try values.decodeIfPresent(Int.self, forKey: .legacyPoints) ?? 0
             salt = try values.decodeIfPresent(String.self, forKey: .salt) ?? UUID().uuidString
             recent = try values.decodeIfPresent([String: Date].self, forKey: .recent) ?? [:]
+            cloudUserID = try values.decodeIfPresent(String.self, forKey: .cloudUserID)
+            cloudEvents = try values.decodeIfPresent([String].self, forKey: .cloudEvents) ?? []
             lastRewardDate = try values.decodeIfPresent(Date.self, forKey: .lastRewardDate)
             rewardDay = try values.decodeIfPresent(String.self, forKey: .rewardDay) ?? ""
             rewardHashes = try values.decodeIfPresent(Set<String>.self, forKey: .rewardHashes) ?? []
@@ -72,6 +77,8 @@ final class PositiveActivityStore {
             try values.encode(legacyPoints, forKey: .legacyPoints)
             try values.encode(salt, forKey: .salt)
             try values.encode(recent, forKey: .recent)
+            try values.encodeIfPresent(cloudUserID, forKey: .cloudUserID)
+            try values.encode(cloudEvents, forKey: .cloudEvents)
             try values.encodeIfPresent(lastRewardDate, forKey: .lastRewardDate)
             try values.encode(rewardDay, forKey: .rewardDay)
             try values.encode(rewardHashes, forKey: .rewardHashes)
@@ -169,6 +176,30 @@ final class PositiveActivityStore {
         self.directoryProvider = { directory?.appendingPathComponent("PositivePoints", isDirectory: true) }
     }
 
+    func setCloudAccount(_ id: String?) throws {
+        try transaction { state in
+            if state.cloudUserID != id {
+                state.cloudUserID = id
+                state.cloudEvents = []
+                state.dailyEarned = 0; state.lastRewardDate = nil; state.recent = [:]
+                // Do not import debug/prototype balances into a server wallet.
+                state.legacyPoints = 0
+                state.collection = [:]; state.exchanges = []; state.equipped = "momo"
+            }
+        }
+    }
+    func acknowledgeCloudEvent(_ id: String) throws {
+        try transaction { $0.cloudEvents.removeAll { $0 == id } }
+    }
+    func applyCloudState(balance: Int, inventory: [String:Int]) throws {
+        try transaction { state in
+            state.legacyPoints = max(0,balance)
+            state.collection = inventory.filter { Self.characters.contains($0.key) }
+            state.exchanges = Set(inventory.keys.filter { Self.exchangeCosts[$0] != nil })
+            if state.equipped != "momo", state.collection[state.equipped, default: 0] == 0 { state.equipped = "momo" }
+        }
+    }
+
     func snapshot(now: Date = Date()) throws -> Snapshot {
         try transaction(now: now) { $0 }
     }
@@ -192,7 +223,8 @@ final class PositiveActivityStore {
             state.recent[digest] = now
             if state.dailyEarned < 100, state.lastRewardDate.map({ now.timeIntervalSince($0) >= 30 }) ?? true {
                 state.lastRewardDate = now
-                state.legacyPoints += 5
+                if state.cloudUserID == nil { state.legacyPoints += 5 }
+                else if state.cloudEvents.count < 100 { state.cloudEvents.append(UUID().uuidString) }
                 state.dailyEarned += 5
                 if state.questJoined, !state.questClaimed { state.questProgress = min(5, state.questProgress + 1) }
             }

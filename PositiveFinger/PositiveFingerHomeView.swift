@@ -17,6 +17,10 @@ private enum Pop {
 struct PositiveFingerHomeView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @StateObject private var cloud = PositiveCloud.shared
+    @State private var email = ""
+    @State private var password = ""
+    @State private var showingCloudAccount = false
     @State private var snapshot = PositiveActivityStore.Snapshot()
     @State private var tab = 0
     @State private var sample = ""
@@ -40,7 +44,7 @@ struct PositiveFingerHomeView: View {
             page { home }.tabItem { Label("ホーム", systemImage: "house.fill") }.tag(0)
             page {
                 Picker("あそぶ", selection: $playMode) { Text("ガチャ").tag(0); Text("イベント").tag(1) }.pickerStyle(.segmented)
-                if playMode == 0 { arcade } else { events }
+                if playMode == 0 { arcade } else if cloud.signedIn { liveEvents } else { events }
             }.tabItem { Label("あそぶ", systemImage: "sparkles.rectangle.stack.fill") }.tag(1)
             page { collection }.tabItem { Label("ずかん", systemImage: "square.grid.2x2.fill") }.tag(2)
             page { exchangeShop }.tabItem { Label("交換所", systemImage: "gift.fill") }.tag(3)
@@ -62,7 +66,17 @@ struct PositiveFingerHomeView: View {
             }
             refresh()
         }
-        .onChange(of: scenePhase) { if $0 == .active { refresh() } }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active { refresh(); cloud.startLive(); Task { await cloud.sync(); refresh() } }
+            else { cloud.stopLive() }
+        }
+        .task { if cloud.signedIn { await cloud.sync(); refresh(); cloud.startLive() } }
+        .onReceive(Timer.publish(every: 15, on: .main, in: .common).autoconnect()) { _ in
+            guard scenePhase == .active, cloud.signedIn else { return }
+            Task { await cloud.sync(); refresh() }
+        }
+        .onReceive(cloud.$state) { _ in refresh() }
+        .sheet(isPresented: $showingCloudAccount) { cloudAccount }
         .alert("お知らせ", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK", role: .cancel) { error = nil }
         } message: { Text(error ?? "") }
@@ -101,6 +115,7 @@ struct PositiveFingerHomeView: View {
                 Button { showSetup = true } label: { Image(systemName: "keyboard").font(.title3).padding(13).popPanel(.white, radius: 18) }
                     .accessibilityLabel("キーボードの使い方")
             }
+            cloudHome
             HStack(alignment: .top) {
                 Text("ことばが、\nごほうびに。").font(.system(size: 34, weight: .black, design: .rounded)).lineSpacing(3)
                 Spacer(minLength: 0)
@@ -231,6 +246,123 @@ struct PositiveFingerHomeView: View {
         }
     }
 
+    private var cloudHome: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            HStack {
+                Label(cloud.signedIn ? "ことばの冒険" : "ひとりから、みんなへ", systemImage: "sparkles").font(.headline)
+                Spacer()
+                if cloud.signedIn { Text(cloud.live ? "● 同期中" : "接続を確認中").font(.caption2).foregroundStyle(.secondary) }
+            }
+            if let state = cloud.state {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("連続チェックイン").font(.caption)
+                        Text("\(state.wallet.streak)日").font(.title.bold())
+                    }
+                    Spacer()
+                    Button("今日の10 pt") { cloudAction("checkin") }
+                        .font(.subheadline.bold()).padding(12).foregroundStyle(.white).background(Pop.purple, in: Capsule())
+                        .disabled(cloud.busy || state.wallet.checkin_day == serverDay)
+                }
+                Divider()
+                Text("デイリーミッション").font(.subheadline.bold())
+                ForEach(["first_word", "five_words"], id: \.self) { id in
+                    let target = id == "first_word" ? 1 : 5
+                    let reward = id == "first_word" ? 10 : 20
+                    let count = state.wallet.earned_day == serverDay ? state.wallet.daily_earned / 5 : 0
+                    let claimed = state.missions.contains(id)
+                    HStack {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("ことばを\(target)回届けよう").font(.subheadline.bold())
+                            Text("\(min(count,target)) / \(target) · \(reward) pt").font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button(claimed ? "受取済み" : "受け取る") { cloudAction("mission", item:id) }
+                            .font(.caption.bold()).disabled(cloud.busy || claimed || count < target)
+                    }
+                }
+                if !state.announcements.isEmpty {
+                    Divider()
+                    Text("運営からのお知らせ").font(.subheadline.bold())
+                    ForEach(state.announcements.prefix(3)) { note in
+                        DisclosureGroup { Text(note.body).font(.caption).textSelection(.enabled) } label: { Text(note.title).font(.subheadline) }
+                    }
+                }
+            } else {
+                Text("毎日のミッション、みんなのイベント、相棒コレクション。登録して、ことばの冒険をはじめよう。") .font(.subheadline)
+                Button(cloud.signedIn ? "接続を再試行" : "登録・ログイン") {
+                    if cloud.signedIn { Task { await cloud.sync(); refresh() } } else { showingCloudAccount = true }
+                }.font(.subheadline.bold())
+            }
+            if let message = cloud.message { Text(message).font(.caption).foregroundStyle(.secondary) }
+            if cloud.signedIn, !snapshot.cloudEvents.isEmpty { Text("ことばのポイントを同期しています").font(.caption).foregroundStyle(.secondary) }
+        }.padding(20).popPanel(.white)
+    }
+    private var serverDay: String {
+        var calendar = Calendar(identifier:.gregorian); calendar.timeZone = TimeZone(identifier:"Asia/Tokyo")!
+        let p = calendar.dateComponents([.year,.month,.day],from:Date())
+        return String(format:"%04d-%02d-%02d",p.year!,p.month!,p.day!)
+    }
+    private var cloudAccount: some View {
+        NavigationStack {
+            Form {
+                if cloud.signedIn {
+                    Section("ログイン済み") {
+                        Text(cloud.state?.profile.display_name ?? "接続中")
+                        Text(cloud.state?.profile.id ?? "").font(.caption).textSelection(.enabled)
+                        Button("同期し直す") { Task { await cloud.sync(); refresh(); cloud.startLive() } }
+                        Button("ログアウト", role:.destructive) { cloud.signOut(); refresh() }
+                    }
+                } else {
+                    Section("アカウント") {
+                        TextField("メールアドレス",text:$email).textContentType(.username).keyboardType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled()
+                        SecureField("パスワード（8文字以上）",text:$password).textContentType(.password)
+                        Button("ログイン") { authenticate(false) }.disabled(cloud.busy || email.isEmpty || password.isEmpty)
+                        Button("新規登録") { authenticate(true) }.disabled(cloud.busy || email.isEmpty || password.count < 8)
+                    }
+                    Section { Text("ログイン後は、ポイントと相棒・イベント参加をSupabaseに保存します。入力文は送りません。端末内のテスト残高はサーバーへ移行しません。") .font(.caption) }
+                }
+                if cloud.busy { ProgressView() }
+                if let message = cloud.message { Text(message).font(.caption) }
+            }.navigationTitle("ことばの冒険をはじめる").toolbar { Button("閉じる") { password=""; showingCloudAccount=false } }
+        }
+    }
+    private func authenticate(_ signUp: Bool) {
+        let value=password; password=""
+        Task { await cloud.authenticate(email:email,password:value,signUp:signUp); refresh(); if cloud.state != nil { showingCloudAccount=false } }
+    }
+    private func cloudAction(_ action:String, item:String? = nil) {
+        Task {
+            do { _ = try await cloud.perform(action,item:item); refresh() }
+            catch { self.error=error.localizedDescription }
+        }
+    }
+    private var liveEvents: some View {
+        VStack(alignment:.leading,spacing:20) {
+            eyebrow("TOGETHER, A LITTLE BETTER")
+            Text("ひとりの一歩が、\nみんなの力に。").font(.system(size:32,weight:.black,design:.rounded))
+            if let state=cloud.state {
+                if state.events.isEmpty { Text("次のイベントを準備しています。お知らせを楽しみに！").font(.subheadline) }
+                ForEach(state.events) { event in
+                    let member=state.memberships.first { $0.event_id==event.id }
+                    VStack(alignment:.leading,spacing:16) {
+                        Text(event.title).font(.title2.bold())
+                        Text(event.description).font(.subheadline)
+                        ProgressView(value:Double(min(event.progress,event.goal)),total:Double(event.goal)).tint(Pop.purple)
+                        Text("みんなで \(event.progress) / \(event.goal) 回").font(.headline)
+                        Text("あなたの貢献 \(member?.contribution ?? 0) 回 · 達成報酬 \(event.reward) pt").font(.caption)
+                        if let member {
+                            Button(member.claimed ? "報酬受取済み" : "達成報酬を受け取る") { cloudAction("claim_event",item:event.id) }
+                                .disabled(cloud.busy || member.claimed || member.contribution<1 || event.progress<event.goal)
+                        } else {
+                            Button("イベントに参加する") { cloudAction("join_event",item:event.id) }.disabled(cloud.busy)
+                        }
+                    }.padding(20).popPanel(Pop.colors[3].opacity(0.25))
+                }
+            } else { Text("ログインして、みんなで同じクエストに参加しよう。"); Button("登録・ログイン") { showingCloudAccount=true } }
+        }
+    }
+
     private var exchangeShop: some View {
         VStack(alignment: .leading, spacing: 22) {
             eyebrow("THE REWARD COUNTER")
@@ -317,6 +449,7 @@ struct PositiveFingerHomeView: View {
     }
 
     private func redeem(_ id: String) {
+        if cloud.signedIn { cloudAction("exchange",item:id); return }
         do { try store.exchange(id); refresh() }
         catch PositiveActivityStore.StoreError.insufficientPoints { error = "ポイントが足りません。" }
         catch PositiveActivityStore.StoreError.alreadyOwned { refresh() }
@@ -325,6 +458,10 @@ struct PositiveFingerHomeView: View {
 
     private var settings: some View {
         Form {
+            Section("アカウントと共有") {
+                Button(cloud.signedIn ? "アカウントと接続状態" : "登録・ログイン") { showingCloudAccount = true }
+                Text(cloud.signedIn ? "ポイントと相棒はアカウントに保存されます。" : "ログインすると、全員参加イベントやお知らせ配信を利用できます。端末内のテストポイントは移行されません。") .font(.caption)
+            }
             Section("キーボード") {
                 Button("キーボードの追加・使い方") { showSetup = true }
                 Toggle("入力中の自動変換", isOn: Binding(
@@ -354,7 +491,7 @@ struct PositiveFingerHomeView: View {
                 Text("ポイントはこの端末のアプリ内専用です。換金・他社ポイントへの交換・購入には対応していません。")
             }.font(.caption)
             Section("プライバシー") {
-                Text("現在のバージョンは入力文を外部に送りません。全文や入力履歴も保存しません。端末内に回数・ポイント・相棒・設定と、重複判定用のハッシュを保存します。語句の検出は気持ちの評価ではありません。パスワードなどの機密入力は解析対象外です。").font(.caption)
+                Text("入力文を外部に送りません。ログイン時は利用者ID・獲得イベント・ポイント・相棒をサーバーに保存します。全文や入力履歴も保存しません。端末内に回数・ポイント・相棒・設定と、重複判定用のハッシュを保存します。語句の検出は気持ちの評価ではありません。パスワードなどの機密入力は解析対象外です。").font(.caption)
                 Button("オープンソースライセンス") { showLicenses = true }
             }
             Text("POSITIVE FINGER / PLAYFUL PROTOTYPE").font(.system(size: 10, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
@@ -369,6 +506,7 @@ struct PositiveFingerHomeView: View {
     private var debugMenu: some View {
         NavigationStack {
             Form {
+                if cloud.signedIn { Text("クラウド接続中です。テスト操作は端末内データだけに適用され、サーバー残高は変わりません。") .font(.caption) }
                 Section {
                     Label("開発・動作確認専用", systemImage: "wrench.and.screwdriver.fill")
                     Text("このメニューは開発用ビルドだけに含まれます。追加したポイントは現金や他社ポイントには交換できません。")
@@ -449,6 +587,15 @@ struct PositiveFingerHomeView: View {
 
     private func draw() {
         guard !drawing else { return }
+        if cloud.signedIn {
+            drawing=true
+            Task {
+                defer { drawing=false }
+                do { let id=try await cloud.perform("gacha"); refresh(); reveal=id }
+                catch { self.error=error.localizedDescription }
+            }
+            return
+        }
         do {
             let id = try store.draw()
             refresh(); drawing = true

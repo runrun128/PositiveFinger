@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        AAF020000000000000000001 = {isa = PBXBuildFile; fileRef = AAF020000000000000000002; };
         AAF010000000000000000001 /* AppIcon60x60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAF010000000000000000003; };
         AAF010000000000000000002 /* AppIcon60x60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAF010000000000000000004; };
 		0B0F7C567551A129BCBD4CCC /* KanaKanjiConverterModule in Frameworks */ = {isa = PBXBuildFile; productRef = A464198881A77929632836B6 /* KanaKanjiConverterModule */; };
@@ -67,6 +68,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+        AAF020000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFinger/PositiveCloud.swift; sourceTree = SOURCE_ROOT; };
         AAF010000000000000000003 = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PositiveFinger/AppIcon60x60@2x.png"; sourceTree = SOURCE_ROOT; };
         AAF010000000000000000004 = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PositiveFinger/AppIcon60x60@3x.png"; sourceTree = SOURCE_ROOT; };
 		0F8DA798C598A959F2DC4D01 /* PositiveFinger/PositiveEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFinger/PositiveEngine.swift; sourceTree = SOURCE_ROOT; };
@@ -308,6 +310,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+                AAF020000000000000000001,
 				8DC7B8C54662FFDACCAA72F0 /* PositiveFinger/PositiveEngine.swift in Sources */,
 				B600C384C218211C628CF0D2 /* PositiveFinger/PositiveActivityStore.swift in Sources */,
 				B4F18D9CD0BACB844B79B122 /* PositiveFinger/PositiveKeyboardTracker.swift in Sources */,

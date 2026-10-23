@@ -101,6 +101,30 @@ final class PositiveFingerCoreTests: XCTestCase {
     }
     #endif
 
+    func testCloudOutboxAndAuthoritativeWalletDoNotImportPrototypePoints() throws {
+        let dir = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = PositiveActivityStore(directory: dir)
+        _ = try store.recordDetection(text: "ありがとう")
+        try store.setCloudAccount("account-a")
+        XCTAssertEqual(try store.snapshot().balance, 0)
+        let now = Date().addingTimeInterval(31)
+        _ = try store.recordDetection(text: "できた", now: now)
+        var state = try store.snapshot(now: now)
+        XCTAssertEqual(state.balance, 0)
+        XCTAssertEqual(state.cloudEvents.count, 1)
+        try store.applyCloudState(balance: 30, inventory: ["soda":2,"sky":1])
+        try store.acknowledgeCloudEvent(state.cloudEvents[0])
+        state = try store.snapshot(now: now)
+        XCTAssertEqual(state.balance, 30)
+        XCTAssertEqual(state.collection["soda"], 2)
+        XCTAssertTrue(state.exchanges.contains("sky"))
+        XCTAssertTrue(state.cloudEvents.isEmpty)
+        try store.setCloudAccount("account-b")
+        XCTAssertEqual(try store.snapshot().balance, 0)
+        XCTAssertTrue(try store.snapshot().collection.isEmpty)
+    }
+
     private func temporaryDirectory() -> URL {
         FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     }
