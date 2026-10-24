@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "PositiveFinger — ことばが、ごほうびに。",
+  "version": "0.2.0",
+  "description": "使うページだけでオンにする、ポジティブなことばと相棒のChrome版プロトタイプ。入力文は送信・保存しません。",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://ctyzaihzltcncspujmnb.supabase.co/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "PositiveFinger",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "128": "icons/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src https://ctyzaihzltcncspujmnb.supabase.co"
+  },
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ]
+}

@@ -26,6 +26,8 @@ final class PositiveActivityStore {
         var dailyEarned = 0
         var collection: [String: Int] = [:]
         var equipped = "momo"
+        var selectedBackground = "paper"
+        var selectedTitle = "none"
         var balance: Int { legacyPoints }
         var lastRewardDate: Date?
         var cloudUserID: String?
@@ -39,7 +41,7 @@ final class PositiveActivityStore {
         init() {}
         enum CodingKeys: String, CodingKey {
             case detectionCount, dailyCounts, settings, salt, recent, rewardedCount, lastFeedbackDate
-            case cloudUserID, cloudEvents
+            case cloudUserID, cloudEvents, selectedBackground, selectedTitle
             case lastRewardDate
             case rewardDay, rewardHashes, dailyEarned, collection, equipped, exchanges, questJoined, questStartCount, questProgress, questClaimed
             case legacyPoints = "totalPoints"
@@ -62,6 +64,8 @@ final class PositiveActivityStore {
             dailyEarned = try values.decodeIfPresent(Int.self, forKey: .dailyEarned) ?? 0
             collection = try values.decodeIfPresent([String: Int].self, forKey: .collection) ?? [:]
             equipped = try values.decodeIfPresent(String.self, forKey: .equipped) ?? "momo"
+            selectedBackground = try values.decodeIfPresent(String.self, forKey: .selectedBackground) ?? "paper"
+            selectedTitle = try values.decodeIfPresent(String.self, forKey: .selectedTitle) ?? "none"
             exchanges = try values.decodeIfPresent(Set<String>.self, forKey: .exchanges) ?? []
             questJoined = try values.decodeIfPresent(Bool.self, forKey: .questJoined) ?? false
             questStartCount = try values.decodeIfPresent(Int.self, forKey: .questStartCount) ?? 0
@@ -85,6 +89,8 @@ final class PositiveActivityStore {
             try values.encode(dailyEarned, forKey: .dailyEarned)
             try values.encode(collection, forKey: .collection)
             try values.encode(equipped, forKey: .equipped)
+            try values.encode(selectedBackground, forKey: .selectedBackground)
+            try values.encode(selectedTitle, forKey: .selectedTitle)
             try values.encode(exchanges, forKey: .exchanges)
             try values.encode(questJoined, forKey: .questJoined)
             try values.encode(questStartCount, forKey: .questStartCount)
@@ -185,15 +191,18 @@ final class PositiveActivityStore {
                 // Do not import debug/prototype balances into a server wallet.
                 state.legacyPoints = 0
                 state.collection = [:]; state.exchanges = []; state.equipped = "momo"
+                state.selectedBackground = "paper"; state.selectedTitle = "none"
             }
         }
     }
     func acknowledgeCloudEvent(_ id: String) throws {
         try transaction { $0.cloudEvents.removeAll { $0 == id } }
     }
-    func applyCloudState(balance: Int, inventory: [String:Int]) throws {
+    func applyCloudState(balance: Int, inventory: [String:Int], background: String = "paper", title: String = "none") throws {
         try transaction { state in
             state.legacyPoints = max(0,balance)
+            state.selectedBackground = background == "sky" && inventory["sky"] != nil ? "sky" : "paper"
+            state.selectedTitle = title == "wordfriend" && inventory["wordfriend"] != nil ? "wordfriend" : "none"
             state.collection = inventory.filter { Self.characters.contains($0.key) }
             state.exchanges = Set(inventory.keys.filter { Self.exchangeCosts[$0] != nil })
             if state.equipped != "momo", state.collection[state.equipped, default: 0] == 0 { state.equipped = "momo" }

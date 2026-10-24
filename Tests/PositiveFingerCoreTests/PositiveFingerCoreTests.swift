@@ -255,4 +255,29 @@ final class PositiveFingerCoreTests: XCTestCase {
         XCTAssertFalse(tracker.processCommittedText("ありがとう", now: now.addingTimeInterval(1)))
         XCTAssertEqual(feedbackCount, 1)
     }
+    func testOwnedCosmeticsRequireSelectionAndSurviveRestart() throws {
+        let dir = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = PositiveActivityStore(directory: dir)
+        try store.setCloudAccount("account-a")
+        try store.applyCloudState(balance: 100, inventory: ["sky": 1, "wordfriend": 1])
+        XCTAssertEqual(try store.snapshot().selectedBackground, "paper")
+        XCTAssertEqual(try store.snapshot().selectedTitle, "none")
+        try store.applyCloudState(balance: 100, inventory: ["sky": 1, "wordfriend": 1], background: "sky", title: "wordfriend")
+        let reopened = PositiveActivityStore(directory: dir)
+        XCTAssertEqual(try reopened.snapshot().selectedBackground, "sky")
+        XCTAssertEqual(try reopened.snapshot().selectedTitle, "wordfriend")
+        try reopened.setCloudAccount("account-b")
+        XCTAssertEqual(try reopened.snapshot().selectedBackground, "paper")
+        XCTAssertEqual(try reopened.snapshot().selectedTitle, "none")
+    }
+    func testUnownedCosmeticsCannotBeAppliedFromCloudCache() throws {
+        let dir = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = PositiveActivityStore(directory: dir)
+        try store.applyCloudState(balance: 10, inventory: [:], background: "sky", title: "wordfriend")
+        XCTAssertEqual(try store.snapshot().selectedBackground, "paper")
+        XCTAssertEqual(try store.snapshot().selectedTitle, "none")
+    }
+
 }

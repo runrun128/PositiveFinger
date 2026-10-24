@@ -23,12 +23,19 @@ struct PositiveFingerHomeView: View {
     @State private var showingCloudAccount = false
     @State private var snapshot = PositiveActivityStore.Snapshot()
     @State private var tab = 0
-    @State private var sample = ""
-    @State private var result: PositiveAnalysisResult?
     @State private var error: String?
     @State private var reveal: String?
     @State private var drawing = false
     @State private var playMode = 0
+    @State private var signingUp = false
+    @State private var nickname = ""
+    @State private var rankingOptIn = false
+    @State private var backgroundChoice = "paper"
+    @State private var titleChoice = "none"
+    @State private var profileMessage: String?
+    @State private var showingNotifications = false
+    @State private var showingRanking = false
+    @State private var readAnnouncementIDs: Set<String> = []
     @State private var pendingExchange: String?
     #if DEBUG
     @State private var showingDebugMenu = false
@@ -40,15 +47,11 @@ struct PositiveFingerHomeView: View {
     private let store = PositiveActivityStore.shared
 
     var body: some View {
-        TabView(selection: $tab) {
-            page { home }.tabItem { Label("ホーム", systemImage: "house.fill") }.tag(0)
-            page {
-                Picker("あそぶ", selection: $playMode) { Text("ガチャ").tag(0); Text("イベント").tag(1) }.pickerStyle(.segmented)
-                if playMode == 0 { arcade } else if cloud.signedIn { liveEvents } else { events }
-            }.tabItem { Label("あそぶ", systemImage: "sparkles.rectangle.stack.fill") }.tag(1)
-            page { collection }.tabItem { Label("ずかん", systemImage: "square.grid.2x2.fill") }.tag(2)
-            page { exchangeShop }.tabItem { Label("交換所", systemImage: "gift.fill") }.tag(3)
-            NavigationStack { settings }.tabItem { Label("設定", systemImage: "slider.horizontal.3") }.tag(4)
+        Group {
+            if !cloud.signedIn { welcome }
+            else if cloud.state == nil { connectionScreen }
+            else if cloud.state?.profile.nickname_set != true { nicknameSetup }
+            else { appTabs }
         }
         .tint(Pop.purple).preferredColorScheme(.light)
         .confirmationDialog("ポイントを使って交換しますか？", isPresented: Binding(get: { pendingExchange != nil }, set: { if !$0 { pendingExchange = nil } }), titleVisibility: .visible) {
@@ -70,12 +73,16 @@ struct PositiveFingerHomeView: View {
             if phase == .active { refresh(); cloud.startLive(); Task { await cloud.sync(); refresh() } }
             else { cloud.stopLive() }
         }
+        .task { await cloud.loadProviders() }
         .task { if cloud.signedIn { await cloud.sync(); refresh(); cloud.startLive() } }
         .onReceive(Timer.publish(every: 15, on: .main, in: .common).autoconnect()) { _ in
             guard scenePhase == .active, cloud.signedIn else { return }
             Task { await cloud.sync(); refresh() }
         }
-        .onReceive(cloud.$state) { _ in refresh() }
+        .onReceive(cloud.$state) { _ in refresh(); loadReadAnnouncements() }
+        .onChange(of: cloud.signedIn) { value in if !value { showingCloudAccount=false; showingRanking=false; showingNotifications=false; reveal=nil; nickname=""; password=""; tab=0 } }
+        .sheet(isPresented: $showingNotifications) { notifications }
+        .sheet(isPresented: $showingRanking) { ranking }
         .sheet(isPresented: $showingCloudAccount) { cloudAccount }
         .alert("お知らせ", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK", role: .cancel) { error = nil }
@@ -95,10 +102,23 @@ struct PositiveFingerHomeView: View {
         }
     }
 
+    private var appTabs: some View {
+        TabView(selection: $tab) {
+            page { home }.tabItem { Label("ホーム", systemImage: "house.fill") }.tag(0)
+            page {
+                Picker("あそぶ", selection: $playMode) { Text("ガチャ").tag(0); Text("イベント").tag(1) }.pickerStyle(.segmented)
+                if playMode == 0 { arcade } else { liveEvents }
+            }.tabItem { Label("あそぶ", systemImage: "sparkles.rectangle.stack.fill") }.tag(1)
+            page { collection }.tabItem { Label("ずかん", systemImage: "square.grid.2x2.fill") }.tag(2)
+            page { exchangeShop }.tabItem { Label("交換所", systemImage: "gift.fill") }.tag(3)
+            NavigationStack { settings }.tabItem { Label("設定", systemImage: "slider.horizontal.3") }.tag(4)
+        }
+    }
+
     private func page<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         NavigationStack {
             ScrollView { VStack(alignment: .leading, spacing: 24) { content() }.padding(22) }
-                .background(snapshot.exchanges.contains("sky") ? Pop.colors[1].opacity(0.14) : Pop.paper).foregroundStyle(Pop.ink)
+                .background(snapshot.selectedBackground == "sky" ? Pop.colors[1].opacity(0.14) : Pop.paper).foregroundStyle(Pop.ink)
                 .toolbar(.hidden, for: .navigationBar)
                 .refreshable { refresh() }
         }
@@ -112,14 +132,16 @@ struct PositiveFingerHomeView: View {
                     Text("FINGER!").tracking(3)
                 }.font(.system(size: 16, weight: .black, design: .rounded))
                 Spacer()
-                Button { showSetup = true } label: { Image(systemName: "keyboard").font(.title3).padding(13).popPanel(.white, radius: 18) }
-                    .accessibilityLabel("キーボードの使い方")
+                Button { showingNotifications = true } label: {
+                    Image(systemName: "bell").font(.title3).padding(13).popPanel(.white,radius:18)
+                        .overlay(alignment:.topTrailing) { if hasUnreadAnnouncements { Circle().fill(Pop.pink).frame(width:9,height:9).padding(5) } }
+                }.accessibilityLabel(hasUnreadAnnouncements ? "お知らせ、未読あり" : "お知らせ")
             }
-            cloudHome
+            Text("こんにちは、\(cloud.state?.profile.display_name ?? "")さん").font(.subheadline).foregroundStyle(.secondary)
             HStack(alignment: .top) {
                 Text("ことばが、\nごほうびに。").font(.system(size: 34, weight: .black, design: .rounded)).lineSpacing(3)
                 Spacer(minLength: 0)
-                Text(snapshot.exchanges.contains("wordfriend") ? "ことばの友" : "HELLO!").font(.system(size: 12, weight: .black, design: .rounded)).padding(12)
+                Text(snapshot.selectedTitle == "wordfriend" ? "ことばの友" : "HELLO!").font(.system(size: 12, weight: .black, design: .rounded)).padding(12)
                     .background(Pop.yellow, in: Capsule()).rotationEffect(.degrees(9)).padding(.top, 12)
             }
             VStack(spacing: 0) {
@@ -140,16 +162,17 @@ struct PositiveFingerHomeView: View {
                         .accessibilityLabel("ガチャへ")
                 }.padding(.top, 18).overlay(alignment: .top) { Rectangle().frame(height: 1.5) }
             }.padding(20).popPanel(Pop.colors[Pop.index(snapshot.equipped)].opacity(0.28), radius: 28)
+            cloudHome
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("きょうのことば貯金").font(.headline)
                     Spacer()
-                    Text("\(snapshot.dailyEarned) / 100 pt").font(.caption.bold())
+                    Text("\(cloud.state?.wallet.earned_day == serverDay ? (cloud.state?.wallet.daily_earned ?? 0) : 0) / 100 pt").font(.caption.bold())
                 }
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule().fill(Pop.ink.opacity(0.08))
-                        Capsule().fill(Pop.purple).frame(width: geo.size.width * min(1, CGFloat(snapshot.dailyEarned) / 100))
+                        Capsule().fill(Pop.purple).frame(width: geo.size.width * min(1, CGFloat(cloud.state?.wallet.earned_day == serverDay ? (cloud.state?.wallet.daily_earned ?? 0) : 0) / 100))
                     }
                 }.frame(height: 12)
                 Text("前向きな表現を確定すると +5 pt。\n無理せず、いつもの会話で。")
@@ -247,56 +270,46 @@ struct PositiveFingerHomeView: View {
     }
 
     private var cloudHome: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            HStack {
-                Label(cloud.signedIn ? "ことばの冒険" : "ひとりから、みんなへ", systemImage: "sparkles").font(.headline)
-                Spacer()
-                if cloud.signedIn { Text(cloud.live ? "● 同期中" : "接続を確認中").font(.caption2).foregroundStyle(.secondary) }
-            }
-            if let state = cloud.state {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("連続チェックイン").font(.caption)
-                        Text("\(state.wallet.streak)日").font(.title.bold())
+        VStack(alignment:.leading,spacing:20) {
+            if let state=cloud.state {
+                HStack(spacing:12) {
+                    Image(systemName:"sun.max.fill").font(.title2).foregroundStyle(Pop.purple)
+                    VStack(alignment:.leading,spacing:3) {
+                        Text(state.wallet.checkin_day == serverDay ? "今日も来てくれてありがとう" : "今日のごほうびをどうぞ").font(.subheadline.bold())
+                        Text("連続チェックイン \(state.wallet.streak) 日").font(.caption).foregroundStyle(.secondary)
                     }
-                    Spacer()
-                    Button("今日の10 pt") { cloudAction("checkin") }
-                        .font(.subheadline.bold()).padding(12).foregroundStyle(.white).background(Pop.purple, in: Capsule())
+                    Spacer(minLength:4)
+                    Button(state.wallet.checkin_day == serverDay ? "受取済み" : "+10 pt") { cloudAction("checkin") }
+                        .font(.subheadline.bold()).padding(.horizontal,15).padding(.vertical,11)
+                        .background(state.wallet.checkin_day == serverDay ? Color.gray.opacity(0.1) : Pop.yellow,in:Capsule())
                         .disabled(cloud.busy || state.wallet.checkin_day == serverDay)
                 }
                 Divider()
-                Text("デイリーミッション").font(.subheadline.bold())
-                ForEach(["first_word", "five_words"], id: \.self) { id in
-                    let target = id == "first_word" ? 1 : 5
-                    let reward = id == "first_word" ? 10 : 20
-                    let count = state.wallet.earned_day == serverDay ? state.wallet.daily_earned / 5 : 0
-                    let claimed = state.missions.contains(id)
-                    HStack {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("ことばを\(target)回届けよう").font(.subheadline.bold())
-                            Text("\(min(count,target)) / \(target) · \(reward) pt").font(.caption).foregroundStyle(.secondary)
+                Text("きょうのミッション").font(.headline)
+                ForEach(["first_word","five_words"],id:\.self) { id in
+                    let target=id == "first_word" ? 1 : 5
+                    let reward=id == "first_word" ? 10 : 20
+                    let count=state.wallet.earned_day == serverDay ? state.wallet.daily_earned/5 : 0
+                    let claimed=state.missions.contains(id)
+                    HStack(spacing:12) {
+                        Image(systemName:claimed ? "checkmark.circle.fill" : "bubble.left.and.bubble.right").foregroundStyle(Pop.purple)
+                        VStack(alignment:.leading,spacing:4) {
+                            Text("ことばを\(target)回届けよう").font(.subheadline)
+                            Text("\(min(count,target)) / \(target)").font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Button(claimed ? "受取済み" : "受け取る") { cloudAction("mission", item:id) }
-                            .font(.caption.bold()).disabled(cloud.busy || claimed || count < target)
+                        Button(claimed ? "✓" : "+\(reward) pt") { cloudAction("mission",item:id) }
+                            .font(.subheadline.bold()).frame(minWidth:60,minHeight:44)
+                            .disabled(cloud.busy || claimed || count<target)
                     }
                 }
-                if !state.announcements.isEmpty {
-                    Divider()
-                    Text("運営からのお知らせ").font(.subheadline.bold())
-                    ForEach(state.announcements.prefix(3)) { note in
-                        DisclosureGroup { Text(note.body).font(.caption).textSelection(.enabled) } label: { Text(note.title).font(.subheadline) }
-                    }
-                }
-            } else {
-                Text("毎日のミッション、みんなのイベント、相棒コレクション。登録して、ことばの冒険をはじめよう。") .font(.subheadline)
-                Button(cloud.signedIn ? "接続を再試行" : "登録・ログイン") {
-                    if cloud.signedIn { Task { await cloud.sync(); refresh() } } else { showingCloudAccount = true }
-                }.font(.subheadline.bold())
+                Button { showingRanking=true } label: {
+                    HStack { Image(systemName:"chart.bar.xaxis"); Text("みんなのことばランキング"); Spacer(); Image(systemName:"chevron.right").font(.caption) }.font(.subheadline.bold()).padding(.top,4)
+                }.buttonStyle(.plain)
             }
-            if let message = cloud.message { Text(message).font(.caption).foregroundStyle(.secondary) }
-            if cloud.signedIn, !snapshot.cloudEvents.isEmpty { Text("ことばのポイントを同期しています").font(.caption).foregroundStyle(.secondary) }
-        }.padding(20).popPanel(.white)
+            if !snapshot.cloudEvents.isEmpty { Label("ポイントを同期しています",systemImage:"arrow.triangle.2.circlepath").font(.caption).foregroundStyle(.secondary) }
+            if let message=cloud.message { Text(message).font(.caption).foregroundStyle(.secondary) }
+        }.padding(20).background(.white,in:RoundedRectangle(cornerRadius:24))
     }
     private var serverDay: String {
         var calendar = Calendar(identifier:.gregorian); calendar.timeZone = TimeZone(identifier:"Asia/Tokyo")!
@@ -306,25 +319,13 @@ struct PositiveFingerHomeView: View {
     private var cloudAccount: some View {
         NavigationStack {
             Form {
-                if cloud.signedIn {
-                    Section("ログイン済み") {
-                        Text(cloud.state?.profile.display_name ?? "接続中")
-                        Text(cloud.state?.profile.id ?? "").font(.caption).textSelection(.enabled)
-                        Button("同期し直す") { Task { await cloud.sync(); refresh(); cloud.startLive() } }
-                        Button("ログアウト", role:.destructive) { cloud.signOut(); refresh() }
-                    }
-                } else {
-                    Section("アカウント") {
-                        TextField("メールアドレス",text:$email).textContentType(.username).keyboardType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled()
-                        SecureField("パスワード（8文字以上）",text:$password).textContentType(.password)
-                        Button("ログイン") { authenticate(false) }.disabled(cloud.busy || email.isEmpty || password.isEmpty)
-                        Button("新規登録") { authenticate(true) }.disabled(cloud.busy || email.isEmpty || password.count < 8)
-                    }
-                    Section { Text("ログイン後は、ポイントと相棒・イベント参加をSupabaseに保存します。入力文は送りません。端末内のテスト残高はサーバーへ移行しません。") .font(.caption) }
+                Section("アカウント") {
+                    Text(cloud.state?.profile.display_name ?? "接続中")
+                    Text("ポイント・相棒はこのアカウントで共有されます。").font(.caption)
+                    Button("同期し直す") { Task { await cloud.sync(); refresh(); cloud.startLive() } }
+                    Button("ログアウト",role:.destructive) { cloud.signOut(); refresh() }
                 }
-                if cloud.busy { ProgressView() }
-                if let message = cloud.message { Text(message).font(.caption) }
-            }.navigationTitle("ことばの冒険をはじめる").toolbar { Button("閉じる") { password=""; showingCloudAccount=false } }
+            }.navigationTitle("アカウント").toolbar { Button("閉じる") { showingCloudAccount=false } }
         }
     }
     private func authenticate(_ signUp: Bool) {
@@ -402,68 +403,186 @@ struct PositiveFingerHomeView: View {
         }.padding(20).popPanel(.white)
     }
 
-    private var events: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            eyebrow("TOGETHER, A LITTLE BETTER")
-            Text("ひとりの一歩が、\nみんなの力に。").font(.system(size: 32, weight: .black, design: .rounded))
-            VStack(alignment: .leading, spacing: 18) {
-                HStack { Label("全員参加クエスト", systemImage: "flag.2.crossed.fill").font(.headline); Spacer(); Text("公開準備中").font(.caption.bold()) }
-                Text("ことばで咲かせる、\nありがとうの木").font(.system(size: 27, weight: .black, design: .rounded))
-                HStack(spacing: 6) {
-                    ForEach(0..<3) { i in Companion(index: [3, 2, 0][i]).frame(height: 105) }
-                }.padding(.vertical, 8)
-                Text("みんなで10,000回の前向きなことばを集めよう。達成したら参加者全員に限定の相棒を。")
-                    .font(.subheadline).lineSpacing(4)
-                Divider()
-                Text("全体進捗：まだ集計していません").font(.subheadline.bold())
-                Text("登録・共有サーバーに未接続です。開催日と正式な報酬は公開時に決定します。他の人の入力文は表示しません。")
-                    .font(.caption).foregroundStyle(.secondary)
-            }.padding(22).popPanel(Pop.colors[3].opacity(0.27), radius: 26)
-            VStack(alignment: .leading, spacing: 16) {
-                HStack { Text("まずは練習クエスト").font(.headline); Spacer(); Text("この端末限定").font(.caption.bold()) }
-                Text("いつものことばを、5つ。").font(.title3.bold())
-                Text("参加後、ポイント対象の異なる入力を5件確定してみよう。同じ文の繰り返しや、1日の獲得上限後の入力は進捗に含みません。")
-                    .font(.caption).foregroundStyle(.secondary)
-                HStack(spacing: 10) {
-                    ForEach(0..<5) { i in
-                        Image(systemName: i < snapshot.questProgress ? "checkmark" : "circle")
-                            .font(.headline).frame(maxWidth: .infinity).frame(height: 36)
-                            .background(i < snapshot.questProgress ? Pop.yellow : .white, in: RoundedRectangle(cornerRadius: 10))
+    private func redeem(_ id:String) { guard cloud.signedIn else { return }; cloudAction("exchange",item:id) }
+
+    private var welcome: some View {
+        ScrollView {
+            VStack(alignment:.leading,spacing:24) {
+                Text("POSITIVE FINGER").font(.system(.caption,design:.rounded).bold()).tracking(3)
+                HStack { Text("いつものことばに、\n小さなごほうび。").font(.system(size:30,weight:.black,design:.rounded)); Spacer() }
+                Companion(index:0).frame(height:130).frame(maxWidth:.infinity)
+                Picker("アカウント",selection:$signingUp) { Text("ログイン").tag(false); Text("新規登録").tag(true) }.pickerStyle(.segmented)
+                VStack(alignment:.leading,spacing:16) {
+                    Text("メールアドレス").font(.caption.bold())
+                    TextField("you@example.com",text:$email).textContentType(.username).keyboardType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled().padding(14).background(Pop.paper,in:RoundedRectangle(cornerRadius:12))
+                    Text("パスワード").font(.caption.bold())
+                    SecureField(signingUp ? "8文字以上" : "パスワード",text:$password).textContentType(signingUp ? .newPassword : .password).padding(14).background(Pop.paper,in:RoundedRectangle(cornerRadius:12))
+                    Button { authenticate(signingUp) } label: {
+                        HStack { Spacer(); if cloud.busy { ProgressView().tint(.white) }; Text(signingUp ? "アカウントを作成" : "ログイン").font(.headline); Spacer() }.padding(17)
+                    }.foregroundStyle(.white).background(Pop.purple,in:RoundedRectangle(cornerRadius:15))
+                        .disabled(cloud.busy || email.trimmingCharacters(in:.whitespaces).isEmpty || password.count < (signingUp ? 8 : 1))
+                    if signingUp { Text("確認メールが届いたら、メール内のリンクを開いてログインしてください。").font(.caption).foregroundStyle(.secondary) }
+                    if !cloud.providers.isEmpty {
+                        HStack { Rectangle().frame(height:1); Text("または").fixedSize(); Rectangle().frame(height:1) }.font(.caption).foregroundStyle(.secondary)
+                        ForEach(cloud.providers,id:\.self) { provider in
+                            Button { cloud.signIn(provider:provider) } label: {
+                                HStack { if provider == "apple" { Image(systemName:"apple.logo") }; Text(provider == "apple" ? "Appleで続ける" : provider == "google" ? "Googleで続ける" : "LINEで続ける"); Spacer(); Image(systemName:"arrow.up.forward") }.font(.subheadline.bold()).padding(16).overlay(RoundedRectangle(cornerRadius:12).stroke(Pop.ink.opacity(0.18)))
+                            }.disabled(cloud.busy)
+                        }
                     }
-                }.accessibilityElement(children: .ignore).accessibilityLabel("進捗5件中\(snapshot.questProgress)件")
-                HStack { Text("達成報酬").font(.caption.bold()); Spacer(); Text("25 pt").font(.title3.bold()) }
-                Button {
-                    do {
-                        if !snapshot.questJoined { try store.joinPracticeQuest() }
-                        else { try store.claimPracticeQuest() }
-                        refresh()
-                    } catch { self.error = "クエストを更新できませんでした。" }
-                } label: {
-                    Text(snapshot.questClaimed ? "報酬を受け取りました" : !snapshot.questJoined ? "練習クエストに参加" : snapshot.questProgress >= 5 ? "25 ptを受け取る" : "参加中 · \(snapshot.questProgress) / 5")
-                        .font(.headline).padding(16).frame(maxWidth: .infinity).foregroundStyle(.white).background(Pop.purple, in: RoundedRectangle(cornerRadius: 15))
-                }.disabled(snapshot.questClaimed || (snapshot.questJoined && snapshot.questProgress < 5))
-            }.padding(20).popPanel(.white)
-            Text("練習の進捗は全体イベントには送信されません。参加状態と進捗はアプリを閉じても残ります。")
-                .font(.caption).foregroundStyle(.secondary)
+                    if let message=cloud.message { Text(message).font(.subheadline).foregroundStyle(Pop.purple).accessibilityAddTraits(.updatesFrequently) }
+                }.padding(22).background(.white,in:RoundedRectangle(cornerRadius:24))
+                Text("ご利用にはアカウントが必要です。ポイントや相棒を安全に共有します。入力した文章は保存・送信しません。").font(.caption).foregroundStyle(.secondary).lineSpacing(4)
+            }.padding(24)
+        }.background(Pop.paper).foregroundStyle(Pop.ink)
+    }
+    private var connectionScreen: some View {
+        VStack(spacing:22) {
+            Image(systemName:"cloud").font(.system(size:44)).foregroundStyle(Pop.purple)
+            Text("アカウントを確認しています").font(.title3.bold())
+            if let message=cloud.message { Text(message).font(.subheadline).multilineTextAlignment(.center) }
+            else { ProgressView() }
+            Button("もう一度接続する") { Task { await cloud.sync(); refresh() } }.disabled(cloud.busy)
+            Button("別のアカウントでログイン") { cloud.signOut() }
+        }.padding(28).frame(maxWidth:.infinity,maxHeight:.infinity).background(Pop.paper)
+    }
+    private var nicknameSetup: some View {
+        NavigationStack {
+            Form {
+                Section { Text("はじめまして！").font(.title.bold()); Text("アプリで使うニックネームを決めよう。あとからマイページで変更できます。") }
+                Section("ニックネーム") { TextField("2〜16文字",text:$nickname).textInputAutocapitalization(.never); Text("本名やメールアドレスを使う必要はありません。").font(.caption) }
+                Section {
+                    Toggle("ランキングに参加する",isOn:$rankingOptIn)
+                    Text("参加すると、ニックネームと、言葉で獲得した累計ポイントが他の利用者に表示されます。いつでも変更できます。").font(.caption)
+                }
+                Section { Button("この名前ではじめる") { saveProfile() }.disabled(cloud.busy || !validNickname) }
+                if let profileMessage { Text(profileMessage).font(.caption) }
+                Section { Button("ログアウト") { cloud.signOut() } }
+            }.navigationTitle("あなたのことを教えてね")
+                .onAppear { loadProfileDraft() }
         }
     }
-
-    private func redeem(_ id: String) {
-        if cloud.signedIn { cloudAction("exchange",item:id); return }
-        do { try store.exchange(id); refresh() }
-        catch PositiveActivityStore.StoreError.insufficientPoints { error = "ポイントが足りません。" }
-        catch PositiveActivityStore.StoreError.alreadyOwned { refresh() }
-        catch { self.error = "交換を保存できませんでした。ポイント残高を確認してください。" }
+    private var validNickname: Bool { let n=nickname.trimmingCharacters(in:.whitespacesAndNewlines); return (2...16).contains(n.count) }
+    private func loadProfileDraft() {
+        if let p=cloud.state?.profile {
+            nickname=p.nickname_set == true ? p.display_name : ""
+            rankingOptIn=p.leaderboard_opt_in ?? false
+            backgroundChoice=p.background ?? "paper"; titleChoice=p.title ?? "none"
+        }
+        profileMessage=nil
+    }
+    private func saveProfile() {
+        Task {
+            do {
+                try await cloud.updateProfile(name:nickname.trimmingCharacters(in:.whitespacesAndNewlines),ranking:rankingOptIn,background:backgroundChoice,title:titleChoice)
+                profileMessage="保存しました。"; refresh()
+            } catch { profileMessage=error.localizedDescription }
+        }
+    }
+    private var myPage: some View {
+        Form {
+            Section { HStack { Companion(index:Pop.index(snapshot.equipped)).frame(width:70,height:80); VStack(alignment:.leading,spacing:6) { Text(cloud.state?.profile.display_name ?? "").font(.title3.bold()); Text("会員ID：" + String((cloud.state?.profile.id ?? "").suffix(8))).font(.caption).textSelection(.enabled) } } }
+            Section("ニックネーム") { TextField("2〜16文字",text:$nickname); Text("本名でなくても大丈夫。同じ名前の人がいる場合があります。").font(.caption) }
+            Section("ランキング") {
+                Toggle("ランキングに参加する",isOn:$rankingOptIn)
+                Text("参加中はニックネームと累計のことばポイントを公開します。テスト付与やチェックイン分は順位に含めません。").font(.caption)
+            }
+            Section { Button("変更を保存") { saveProfile() }.disabled(cloud.busy || !validNickname) }
+            if let profileMessage { Text(profileMessage).font(.caption) }
+        }.navigationTitle("マイページ").onAppear { loadProfileDraft() }
+    }
+    private var appearance: some View {
+        Form {
+            Section("背景") {
+                Picker("背景",selection:$backgroundChoice) {
+                    Text("いつものクリーム").tag("paper")
+                    if snapshot.exchanges.contains("sky") { Text("ソーダの空").tag("sky") }
+                }.pickerStyle(.inline)
+                if !snapshot.exchanges.contains("sky") { Text("新しい背景は交換所で入手できます。").font(.caption) }
+            }
+            Section("称号") {
+                Picker("称号",selection:$titleChoice) {
+                    Text("表示しない").tag("none")
+                    if snapshot.exchanges.contains("wordfriend") { Text("ことばの友").tag("wordfriend") }
+                }.pickerStyle(.inline)
+                if !snapshot.exchanges.contains("wordfriend") { Text("称号は交換所で入手できます。").font(.caption) }
+            }
+            Section { Button("着せ替えを保存") { saveProfile() }.disabled(cloud.busy) }
+            if let profileMessage { Text(profileMessage).font(.caption) }
+        }.navigationTitle("称号・背景").onAppear { loadProfileDraft() }
+    }
+    private var hasUnreadAnnouncements: Bool { !(cloud.state?.announcements ?? []).filter { !readAnnouncementIDs.contains($0.id) }.isEmpty }
+    private func loadReadAnnouncements() {
+        readAnnouncementIDs=Set(UserDefaults.standard.stringArray(forKey:"pf.readAnnouncements."+(cloud.state?.profile.id ?? "")) ?? [])
+    }
+    private var notifications: some View {
+        NavigationStack {
+            List {
+                if let notes=cloud.state?.announcements, !notes.isEmpty {
+                    ForEach(notes) { note in
+                        VStack(alignment:.leading,spacing:12) {
+                            Text(note.kind).font(.caption.bold()).foregroundStyle(Pop.purple)
+                            Text(note.title).font(.headline)
+                            Text(note.body).font(.subheadline).lineSpacing(4).textSelection(.enabled)
+                        }.padding(.vertical,10)
+                    }
+                } else { Label("新しいお知らせはありません",systemImage:"bell.slash").foregroundStyle(.secondary) }
+            }.navigationTitle("お知らせ").toolbar { Button("閉じる") { showingNotifications=false } }
+                .refreshable { await cloud.sync() }
+                .onAppear {
+                    readAnnouncementIDs.formUnion((cloud.state?.announcements ?? []).map(\.id))
+                    UserDefaults.standard.set(Array(readAnnouncementIDs),forKey:"pf.readAnnouncements."+(cloud.state?.profile.id ?? ""))
+                }
+        }
+    }
+    private var ranking: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text("ことばが集まるランキング").font(.title3.bold())
+                    Text("言葉で獲得した累計ポイント順。ポイントを使っても減りません。同じ点数なら同じ順位です。").font(.caption)
+                    if cloud.state?.profile.leaderboard_opt_in != true { Text("あなたは非参加です。参加する場合は、設定 → マイページで変更できます。").font(.caption).foregroundStyle(Pop.purple) }
+                }
+                if let board=cloud.leaderboard {
+                    if let me=board.me { Section("あなたの順位") { rankingRow(me) } }
+                    Section("みんなの記録・上位50人") {
+                        if board.entries.isEmpty { Text("まだ参加者がいません。自分のペースでことばを届けよう。").font(.subheadline) }
+                        ForEach(Array(board.entries.enumerated()),id:\.offset) { _,entry in rankingRow(entry) }
+                    }
+                } else if let message=cloud.message { Text(message); Button("再読み込み") { Task { await cloud.loadLeaderboard() } } }
+                else { ProgressView("ランキングを読み込んでいます") }
+            }.navigationTitle("ランキング").toolbar { Button("閉じる") { showingRanking=false } }
+                .task { await cloud.loadLeaderboard() }.refreshable { await cloud.loadLeaderboard() }
+        }
+    }
+    private func rankingRow(_ entry:PFLeaderboard.Entry) -> some View {
+        HStack(spacing:14) {
+            Text("\(entry.place)").font(.title3.bold()).frame(minWidth:28)
+            VStack(alignment:.leading,spacing:4) { Text(entry.display_name).font(.subheadline.bold()); if entry.is_me { Text("あなた").font(.caption).foregroundStyle(Pop.purple) } }
+            Spacer(); Text("\(entry.points.formatted()) pt").font(.subheadline.bold())
+        }.padding(.vertical,6).accessibilityElement(children:.combine)
     }
 
     private var settings: some View {
         Form {
-            Section("アカウントと共有") {
-                Button(cloud.signedIn ? "アカウントと接続状態" : "登録・ログイン") { showingCloudAccount = true }
-                Text(cloud.signedIn ? "ポイントと相棒はアカウントに保存されます。" : "ログインすると、全員参加イベントやお知らせ配信を利用できます。端末内のテストポイントは移行されません。") .font(.caption)
+            Section {
+                NavigationLink { myPage } label: { Label("マイページ",systemImage:"person.crop.circle") }
+                NavigationLink { appearance } label: { Label("称号・背景の着せ替え",systemImage:"paintpalette") }
+                Button { showingRanking=true } label: { Label("ランキング",systemImage:"chart.bar.xaxis") }
+                Button { showingCloudAccount=true } label: { Label("アカウント",systemImage:"person.badge.key") }
             }
             Section("キーボード") {
                 Button("キーボードの追加・使い方") { showSetup = true }
+                Toggle("タイプ音", isOn: Binding(
+                    get: { UserDefaults(suiteName: PositiveActivityStore.appGroupID)?.bool(forKey: "sound_enable_setting") ?? false },
+                    set: { UserDefaults(suiteName: PositiveActivityStore.appGroupID)?.set($0, forKey: "sound_enable_setting"); refresh() }
+                ))
+                Text("入力・削除・確定に合わせてキーの音が鳴ります。音量や消音設定によっては鳴らないことがあります。")
+                    .font(.caption).foregroundStyle(.secondary)
+                Toggle("キーの振動", isOn: Binding(
+                    get: { UserDefaults(suiteName: PositiveActivityStore.appGroupID)?.bool(forKey: "enable_key_haptics") ?? false },
+                    set: { UserDefaults(suiteName: PositiveActivityStore.appGroupID)?.set($0, forKey: "enable_key_haptics"); refresh() }
+                ))
                 Toggle("入力中の自動変換", isOn: Binding(
                     get: { UserDefaults(suiteName: PositiveActivityStore.appGroupID)?.bool(forKey: "live_conversion") ?? false },
                     set: { UserDefaults(suiteName: PositiveActivityStore.appGroupID)?.set($0, forKey: "live_conversion"); refresh() }
@@ -474,12 +593,6 @@ struct PositiveFingerHomeView: View {
                 }))
 
             }
-            Section("ことばの研究室") {
-                TextField("例：今日はありがとうと言えた", text: $sample, axis: .vertical).onChange(of: sample) { _ in result = nil }
-                Button("端末内でおためし判定") { result = PositiveEngine.shared.analyze(sample) }.disabled(sample.isEmpty)
-                if let result { Text(result.isPositive ? "見つけた表現：" + result.matchedWords.joined(separator: "・") : "今回は対象の表現は見つかりませんでした。").font(.subheadline) }
-                Text("おためしではポイントはつきません。現在は登録語句と否定表現のルールで判定しています。AIの接続は準備中です。").font(.caption)
-            }
             Section("ことばの記録") {
                 HStack { Text("これまでの検出"); Spacer(); Text("\(snapshot.detectionCount)回").bold() }
                 Chart(recentDays, id: \.self) { date in
@@ -488,7 +601,7 @@ struct PositiveFingerHomeView: View {
             }
             Section("ポイントについて") {
                 Text("対象の表現を確定すると5 pt。1日100 ptまで。ガチャは25 pt、全6種が同じ確率で出ます。相棒の重複はずかんで確認できます。")
-                Text("ポイントはこの端末のアプリ内専用です。換金・他社ポイントへの交換・購入には対応していません。")
+                Text("ポイントはPositiveFinger内専用です。ログイン時はアカウントで共有されます。換金・他社ポイントへの交換・購入には対応していません。")
             }.font(.caption)
             Section("プライバシー") {
                 Text("入力文を外部に送りません。ログイン時は利用者ID・獲得イベント・ポイント・相棒をサーバーに保存します。全文や入力履歴も保存しません。端末内に回数・ポイント・相棒・設定と、重複判定用のハッシュを保存します。語句の検出は気持ちの評価ではありません。パスワードなどの機密入力は解析対象外です。").font(.caption)
@@ -540,7 +653,7 @@ struct PositiveFingerHomeView: View {
                     do {
                         try store.debugResetProgress()
                         refresh()
-                        result = nil; sample = ""; reveal = nil
+                        reveal = nil
                         debugMessage = "プレイデータをリセットしました。"
                     } catch { debugMessage = "リセットできませんでした。" }
                 }
@@ -586,25 +699,12 @@ struct PositiveFingerHomeView: View {
     }
 
     private func draw() {
-        guard !drawing else { return }
-        if cloud.signedIn {
-            drawing=true
-            Task {
-                defer { drawing=false }
-                do { let id=try await cloud.perform("gacha"); refresh(); reveal=id }
-                catch { self.error=error.localizedDescription }
-            }
-            return
+        guard cloud.signedIn, !drawing else { return }; drawing=true
+        Task {
+            defer { drawing=false }
+            do { let id=try await cloud.perform("gacha"); refresh(); reveal=id }
+            catch { self.error=error.localizedDescription }
         }
-        do {
-            let id = try store.draw()
-            refresh(); drawing = true
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: reduceMotion ? 0 : 600_000_000)
-                drawing = false; reveal = id
-            }
-        } catch PositiveActivityStore.StoreError.insufficientPoints { error = "ポイントが足りません。" }
-        catch { self.error = "ガチャを保存できませんでした。もう一度お試しください。" }
     }
     private func refresh() {
         do { snapshot = try store.snapshot() }

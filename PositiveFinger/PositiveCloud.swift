@@ -1,8 +1,10 @@
 import SwiftUI
 import Security
+import AuthenticationServices
+import CryptoKit
 
 struct PFCloudState: Decodable {
-    struct Profile: Decodable { let id: String; let display_name: String }
+    struct Profile: Decodable { let id: String; let display_name: String; let nickname_set: Bool?; let leaderboard_opt_in: Bool?; let background: String?; let title: String? }
     struct Wallet: Decodable { let balance: Int; let daily_earned: Int; let earned_day: String?; let streak: Int; let checkin_day: String? }
     struct Item: Decodable { let item_id: String; let quantity: Int }
     struct Announcement: Decodable, Identifiable { let id: String; let title: String; let body: String; let kind: String }
@@ -12,13 +14,21 @@ struct PFCloudState: Decodable {
     let announcements: [Announcement]; let events: [Event]; let memberships: [Member]; let missions: [String]
 }
 
-@MainActor final class PositiveCloud: ObservableObject {
+struct PFLeaderboard: Decodable {
+    struct Entry: Decodable { let place: Int; let display_name: String; let points: Int; let is_me: Bool }
+    let entries: [Entry]; let me: Entry?
+}
+
+@MainActor final class PositiveCloud: NSObject, ObservableObject, ASWebAuthenticationPresentationContextProviding {
     static let shared = PositiveCloud()
     @Published var state: PFCloudState?
     @Published var signedIn = false
     @Published var busy = false
     @Published var message: String?
     @Published var live = false
+    @Published var leaderboard: PFLeaderboard?
+    @Published var providers: [String] = []
+    private var webAuth: ASWebAuthenticationSession?
     private struct Session: Codable { let access_token: String; let refresh_token: String; let expires_at: Double?; let user: User; struct User: Codable { let id: String } }
     private var session: Session?
     private var refreshing = false
@@ -30,7 +40,8 @@ struct PFCloudState: Decodable {
     private let key = "sb_publishable_iMRH0X5OmCc3yy7BkNMAgg_HTKChfT1"
     private let keychainQuery: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "com.positivefinger.cloud", kSecAttrAccount as String: "session"]
 
-    private init() {
+    private override init() {
+        super.init()
         var query = keychainQuery; query[kSecReturnData as String] = true
         var found: CFTypeRef?
         if SecItemCopyMatching(query as CFDictionary, &found) == errSecSuccess,
@@ -60,6 +71,7 @@ struct PFCloudState: Decodable {
         let (data, response) = try await URLSession.shared.data(for: req)
         guard let response = response as? HTTPURLResponse, (200..<300).contains(response.statusCode) else {
             let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+            if authorized, (response as? HTTPURLResponse)?.statusCode == 401 { signOut() }
             let raw = object?["msg"] as? String ?? object?["message"] as? String ?? "通信に失敗しました。もう一度お試しください。"
             throw CloudError.text(raw)
         }
@@ -73,7 +85,9 @@ struct PFCloudState: Decodable {
         guard (session.expires_at ?? 0) < Date().timeIntervalSince1970 + 90 else { return }
         refreshing = true
         defer { refreshing = false }
-        let data = try await request("/auth/v1/token?grant_type=refresh_token", body: ["refresh_token":session.refresh_token], authorized: false)
+        let data: Data
+        do { data = try await request("/auth/v1/token?grant_type=refresh_token", body: ["refresh_token":session.refresh_token], authorized: false) }
+        catch let error as CloudError { signOut(); throw error }
         try saveSession(JSONDecoder().decode(Session.self, from: data))
     }
     func authenticate(email: String, password: String, signUp: Bool) async {
@@ -81,11 +95,11 @@ struct PFCloudState: Decodable {
         do {
             let data = try await request(signUp ? "/auth/v1/signup" : "/auth/v1/token?grant_type=password", body: ["email":email.trimmingCharacters(in:.whitespacesAndNewlines),"password":password], authorized:false)
             guard let session = try? JSONDecoder().decode(Session.self, from:data) else { message = "確認メールを送りました。メールを確認してからログインしてください。"; return }
-            try saveSession(session); message = nil; await sync(); startLive()
+            try saveSession(session); try PositiveActivityStore.shared.setCloudAccount(session.user.id); message = nil; await sync(); startLive()
         } catch { message = error.localizedDescription }
     }
     func signOut() {
-        stopLive(); SecItemDelete(keychainQuery as CFDictionary); session = nil; signedIn = false; state = nil
+        webAuth?.cancel(); webAuth=nil; leaderboard=nil; message=nil; stopLive(); SecItemDelete(keychainQuery as CFDictionary); session = nil; signedIn = false; state = nil
         try? PositiveActivityStore.shared.setCloudAccount(nil)
     }
     func sync() async {
@@ -103,8 +117,9 @@ struct PFCloudState: Decodable {
             }
             let data = try await request("/rest/v1/rpc/pf_bootstrap")
             let value = try JSONDecoder().decode(PFCloudState.self, from:data)
+            guard signedIn, self.session?.user.id == value.profile.id else { return }
             state = value
-            try PositiveActivityStore.shared.applyCloudState(balance:value.wallet.balance, inventory:Dictionary(uniqueKeysWithValues:value.inventory.map { ($0.item_id,$0.quantity) }))
+            try PositiveActivityStore.shared.applyCloudState(balance:value.wallet.balance, inventory:Dictionary(uniqueKeysWithValues:value.inventory.map { ($0.item_id,$0.quantity) }), background:value.profile.background ?? "paper", title:value.profile.title ?? "none")
             message = nil
         } catch { message = error.localizedDescription }
     }
@@ -130,6 +145,59 @@ struct PFCloudState: Decodable {
             UserDefaults.standard.removeObject(forKey:storageKey); throw error
         }
     }
+
+    func updateProfile(name: String, ranking: Bool, background: String, title: String) async throws {
+        guard !busy else { throw CloudError.text("処理中です") }; busy=true; defer { busy=false }
+        _ = try await request("/rest/v1/rpc/pf_update_profile",body:["p_name":name,"p_ranking":ranking,"p_background":background,"p_title":title])
+        await sync()
+    }
+    func loadLeaderboard() async {
+        do { leaderboard = try JSONDecoder().decode(PFLeaderboard.self,from:await request("/rest/v1/rpc/pf_leaderboard")); message=nil }
+        catch { message=error.localizedDescription }
+    }
+    func loadProviders() async {
+        do {
+            var req=URLRequest(url:URL(string:base+"/auth/v1/settings")!); req.timeoutInterval=15; req.setValue(key,forHTTPHeaderField:"apikey")
+            let (data,response)=try await URLSession.shared.data(for:req)
+            guard (response as? HTTPURLResponse)?.statusCode == 200,
+                  let settings=try JSONSerialization.jsonObject(with:data) as? [String:Any],
+                  let external=settings["external"] as? [String:Bool] else { return }
+            providers=["apple","google"].filter { external[$0] == true }
+            if Bundle.main.object(forInfoDictionaryKey:"PFLineLoginEnabled") as? Bool == true { providers.append("custom:line") }
+        } catch { }
+    }
+    nonisolated func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        MainActor.assumeIsolated {
+            UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.flatMap(\.windows).first(where: \.isKeyWindow) ?? ASPresentationAnchor()
+        }
+    }
+    func signIn(provider: String) {
+        guard providers.contains(provider), !busy else { return }
+        var bytes=[UInt8](repeating:0,count:32)
+        guard SecRandomCopyBytes(kSecRandomDefault,bytes.count,&bytes)==errSecSuccess else { message="ログインの準備に失敗しました"; return }
+        let verifier=Data(bytes).base64EncodedString().replacingOccurrences(of:"+",with:"-").replacingOccurrences(of:"/",with:"_").replacingOccurrences(of:"=",with:"")
+        let challenge=Data(SHA256.hash(data:Data(verifier.utf8))).base64EncodedString().replacingOccurrences(of:"+",with:"-").replacingOccurrences(of:"/",with:"_").replacingOccurrences(of:"=",with:"")
+        var url=URLComponents(string:base+"/auth/v1/authorize")!
+        url.queryItems=[URLQueryItem(name:"provider",value:provider),URLQueryItem(name:"redirect_to",value:"positivefinger://auth/callback"),URLQueryItem(name:"code_challenge",value:challenge),URLQueryItem(name:"code_challenge_method",value:"s256")]
+        busy=true; message=nil
+        let auth=ASWebAuthenticationSession(url:url.url!,callbackURLScheme:"positivefinger") { [weak self] callback,error in
+            Task { @MainActor in
+                guard let self else { return }; defer { self.busy=false; self.webAuth=nil }
+                if let error { if (error as? ASWebAuthenticationSessionError)?.code != .canceledLogin { self.message="ログインできませんでした。もう一度お試しください。" }; return }
+                guard let callback, callback.scheme=="positivefinger",callback.host=="auth",callback.path=="/callback",
+                      let code=URLComponents(url:callback,resolvingAgainstBaseURL:false)?.queryItems?.first(where:{$0.name=="code"})?.value else { self.message="ログイン結果を確認できませんでした"; return }
+                do {
+                    let data=try await self.request("/auth/v1/token?grant_type=pkce",body:["auth_code":code,"code_verifier":verifier],authorized:false)
+                    let session=try JSONDecoder().decode(Session.self,from:data); try self.saveSession(session)
+                    try PositiveActivityStore.shared.setCloudAccount(session.user.id)
+                    await self.sync(); self.startLive()
+                } catch { self.message=error.localizedDescription }
+            }
+        }
+        auth.presentationContextProvider=self; webAuth=auth
+        if !auth.start() { busy=false; webAuth=nil; message="ログイン画面を開けませんでした" }
+    }
+
     func stopLive() { listener?.cancel(); heartbeat?.cancel(); socket?.cancel(with:.goingAway,reason:nil); socket=nil; live=false }
     func startLive() {
         guard signedIn, listener == nil || listener?.isCancelled == true else { return }
