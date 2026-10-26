@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        AAF030000000000000000003 /* StartupStill.png in Resources */ = {isa = PBXBuildFile; fileRef = AAF030000000000000000013; };
+        AAF030000000000000000002 /* StartupPoster.png in Resources */ = {isa = PBXBuildFile; fileRef = AAF030000000000000000012; };
+        AAF030000000000000000001 /* Startup.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = AAF030000000000000000011; };
         AAF020000000000000000001 = {isa = PBXBuildFile; fileRef = AAF020000000000000000002; };
         AAF010000000000000000001 /* AppIcon60x60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAF010000000000000000003; };
         AAF010000000000000000002 /* AppIcon60x60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAF010000000000000000004; };
@@ -68,6 +71,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+        AAF030000000000000000013 /* StartupStill.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PositiveFinger/Resources/Startup/StartupStill.png"; sourceTree = SOURCE_ROOT; };
+        AAF030000000000000000012 /* StartupPoster.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PositiveFinger/Resources/Startup/StartupPoster.png"; sourceTree = SOURCE_ROOT; };
+        AAF030000000000000000011 /* Startup.mp4 */ = {isa = PBXFileReference; lastKnownFileType = video.mp4; path = "PositiveFinger/Resources/Startup/Startup.mp4"; sourceTree = SOURCE_ROOT; };
         AAF020000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositiveFinger/PositiveCloud.swift; sourceTree = SOURCE_ROOT; };
         AAF010000000000000000003 = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PositiveFinger/AppIcon60x60@2x.png"; sourceTree = SOURCE_ROOT; };
         AAF010000000000000000004 = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PositiveFinger/AppIcon60x60@3x.png"; sourceTree = SOURCE_ROOT; };
@@ -124,6 +130,9 @@
 			isa = PBXGroup;
 			children = (
 				E524E0183086FC5700C523C9 /* PositiveFinger */,
+                AAF030000000000000000013 /* StartupStill.png */,
+                AAF030000000000000000012 /* StartupPoster.png */,
+                AAF030000000000000000011 /* Startup.mp4 */,
 				0F8DA798C598A959F2DC4D01 /* PositiveFinger/PositiveEngine.swift */,
 				2ED4F18FDE652473BCB52288 /* PositiveFinger/PositiveActivityStore.swift */,
 				CDCD7EF80C4B420DC0B918E8 /* PositiveFinger/PositiveKeyboardTracker.swift */,
@@ -284,6 +293,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAF010000000000000000001 /* AppIcon60x60@2x.png in Resources */,
+                AAF030000000000000000003 /* StartupStill.png in Resources */,
+                AAF030000000000000000002 /* StartupPoster.png in Resources */,
+                AAF030000000000000000001 /* Startup.mp4 in Resources */,
                 AAF010000000000000000002 /* AppIcon60x60@3x.png in Resources */,
                 4B51BCB2A95DA7FA37CCC004 /* Acknowledgements.txt in Resources */,
 				E524E0213086FC5900C523C9 /* Preview Assets.xcassets in Resources */,
@@ -483,7 +495,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -517,7 +529,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Positive Finger";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
